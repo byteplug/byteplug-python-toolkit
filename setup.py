@@ -12,5 +12,8 @@ setup(
         'License :: OSI Approved :: Open Software License 3.0 (OSL-3.0)'
     ],
     packages=['byteplug', 'byteplug.validator', 'byteplug.http_api'],
-    install_requires=[]
+    install_requires=[
+        'pyyaml',
+        'flask'
+    ]
 )
