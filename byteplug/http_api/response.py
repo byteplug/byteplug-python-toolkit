@@ -6,6 +6,5 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.http_api.request import request
-from byteplug.http_api.response import response
-from byteplug.http_api.endpoint import root, collection
+def response():
+    pass

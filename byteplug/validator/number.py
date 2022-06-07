@@ -6,5 +6,15 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-def test_htp_api_quz():
-    pass
+class Number:
+    def __init__(self):
+        pass
+
+    def from_json(self):
+        pass
+
+    def to_json(self):
+        pass
+
+    def to_yaml(self):
+        pass

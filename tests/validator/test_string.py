@@ -6,5 +6,7 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-def test_validator_bar():
+from byteplug.validator import String
+
+def test_validator_string():
     pass

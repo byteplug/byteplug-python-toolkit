@@ -6,6 +6,15 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.http_api.request import request
-from byteplug.http_api.response import response
-from byteplug.http_api.endpoint import root, collection
+class Map:
+    def __init__(self):
+        pass
+
+    def from_json(self):
+        pass
+
+    def to_json(self):
+        pass
+
+    def to_yaml(self):
+        pass

@@ -6,5 +6,8 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-def test_validator_foo():
+from byteplug.validator import json_to_object, object_to_json
+from byteplug.validator import specs_to_yaml
+
+def test_validator():
     pass

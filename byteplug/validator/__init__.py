@@ -6,4 +6,15 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-print("byteplug.validator")
+from byteplug.validator.number import Number
+from byteplug.validator.string import String
+from byteplug.validator.map import Map
+
+def json_to_object(json, specs):
+    pass
+
+def object_to_json(object, specs):
+    pass
+
+def specs_to_yaml(specs, verbose=False):
+    pass
