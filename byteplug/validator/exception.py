@@ -6,7 +6,7 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.validator.specs import validate_specs
-from byteplug.validator.document import document_to_object
-from byteplug.validator.object import object_to_document
-from byteplug.validator.exception import ValidationError
+class ValidationError(Exception):
+    def __init__(self, path, message):
+        self.path = path
+        self.message = message
