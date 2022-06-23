@@ -86,8 +86,10 @@ def validate_option_property(path, block):
         raise ValidationError(path, "value of 'option' must be a boolean")
 
 def validate_flag_type(path, block):
-    if 'default' in block and type(block['default']) is not bool:
-        raise ValidationError(path, "value of 'default' must be a boolean")
+    # TODO; Code related to 'default' is disabled temporarily.
+    # if 'default' in block and type(block['default']) is not bool:
+    #     raise ValidationError(path, "value of 'default' must be a boolean")
+    pass
 
 def validate_integer_type(path, block):
     minimum = None
@@ -102,13 +104,17 @@ def validate_integer_type(path, block):
         if maximum[1] < minimum[1]:
             raise ValidationError(path, "maximum must be lower than minimum")
 
-    if 'default' in block and type(block['default']) not in (int, float):
-        raise ValidationError(path, "value of 'default' must be a number")
+    # TODO; Code related to 'default' is disabled temporarily.
+    # if 'default' in block and type(block['default']) not in (int, float):
+    #     raise ValidationError(path, "value of 'default' must be a number")
 
 def validate_decimal_type(path, block):
     # TODO; To be implemented.
-    if 'default' in block and type(block['default']) not in (int, float):
-        raise ValidationError(path, "value of 'default' must be a number")
+    pass
+
+    # TODO; Code related to 'default' is disabled temporarily.
+    # if 'default' in block and type(block['default']) not in (int, float):
+    #     raise ValidationError(path, "value of 'default' must be a number")
 
 def validate_string_type(path, block):
     if 'length' in block:
@@ -119,8 +125,9 @@ def validate_string_type(path, block):
         if type(pattern) is not str:
             raise ValidationError(path, "value of 'pattern' must be a string")
 
-    if 'default' in block and type(block['default']) is not str:
-        raise ValidationError(path, "value of 'default' must be a number")
+    # TODO; Code related to 'default' is disabled temporarily.
+    # if 'default' in block and type(block['default']) is not str:
+    #     raise ValidationError(path, "value of 'default' must be a number")
 
 def validate_enum_type(path, block):
     pass
@@ -168,11 +175,11 @@ def validate_map_type(path, block):
         validate_value_type(path + "." + key, value)
 
 validators = {
-    "flag"     : (validate_flag_type,     ['default']),
-    "integer"  : (validate_integer_type,  ['minimum', 'maximum', 'default']),
-    "decimal"  : (validate_decimal_type,  ['minimum', 'maximum', 'default']),
+    "flag"     : (validate_flag_type,     []),
+    "integer"  : (validate_integer_type,  ['minimum', 'maximum']),
+    "decimal"  : (validate_decimal_type,  ['minimum', 'maximum']),
     "string"   : (validate_string_type,   ['length', 'pattern']),
-    "enum"     : (validate_enum_type,     ['values', 'default']),
+    "enum"     : (validate_enum_type,     ['values']),
     "list"     : (validate_list_type,     ['value', 'length']),
     "tuple"    : (validate_tuple_type,    ['values']),
     "map"      : (validate_map_type,      ['fields'])

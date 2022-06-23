@@ -96,8 +96,9 @@ def test_flag_type():
     specs = {'type': 'flag'}
     validate_specs(specs)
 
-    # test the 'default' property
-    bool_value_property_test(specs, 'default')
+    # TODO; Code related to 'default' is disabled temporarily.
+    # # test the 'default' property
+    # bool_value_property_test(specs, 'default')
 
     # test the 'option' property
     option_property_test(specs)
