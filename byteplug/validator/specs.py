@@ -125,9 +125,6 @@ def validate_string_type(path, block):
 def validate_enum_type(path, block):
     pass
 
-def validate_binary_type(path, block):
-    pass
-
 def validate_list_type(path, block):
     value = block.get('value')
     if not value:
@@ -170,32 +167,15 @@ def validate_map_type(path, block):
     for key, value in fields.items():
         validate_value_type(path + "." + key, value)
 
-def validate_time_type(path, block):
-    pass
-
-def validate_date_type(path, block):
-    pass
-
-def validate_datetime_type(path, block):
-    pass
-
-def validate_duration_type(path, block):
-    pass
-
 validators = {
     "flag"     : (validate_flag_type,     ['default']),
     "integer"  : (validate_integer_type,  ['minimum', 'maximum', 'default']),
     "decimal"  : (validate_decimal_type,  ['minimum', 'maximum', 'default']),
     "string"   : (validate_string_type,   ['length', 'pattern']),
     "enum"     : (validate_enum_type,     ['values', 'default']),
-    "binary"   : (validate_binary_type,   ['default']),
     "list"     : (validate_list_type,     ['value', 'length']),
     "tuple"    : (validate_tuple_type,    ['values']),
-    "map"      : (validate_map_type,      ['fields']),
-    "time"     : (validate_time_type,     ['foo', 'bar', 'quz']),
-    "date"     : (validate_date_type,     ['foo', 'bar', 'quz']),
-    "datetime" : (validate_datetime_type, ['foo', 'bar', 'quz']),
-    "duration" : (validate_duration_type, ['foo', 'bar', 'quz'])
+    "map"      : (validate_map_type,      ['fields'])
 }
 
 def validate_value_type(path, block):
