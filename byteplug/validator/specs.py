@@ -84,6 +84,8 @@ def validate_length_property(path, value, errors):
         if minimum != None and maximum != None:
             if minimum > maximum:
                 raise_error(path, "length.maximum must be greater than length.minimum", errors)
+    else:
+        raise_error(path, "must be either a number of a dict", errors)
 
 def validate_option_property(path, block, errors, warnings):
     if 'option' in block and type(block['option']) is not bool:
