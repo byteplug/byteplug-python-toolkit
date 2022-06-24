@@ -10,3 +10,8 @@ class ValidationError(Exception):
     def __init__(self, path, message):
         self.path = path
         self.message = message
+
+class ValidationWarning(Warning):
+    def __init__(self, path, message):
+        self.path = path
+        self.message = message

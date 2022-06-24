@@ -10,4 +10,4 @@ from byteplug.validator.types import *
 from byteplug.validator.specs import validate_specs
 from byteplug.validator.document import document_to_object
 from byteplug.validator.object import object_to_document
-from byteplug.validator.exception import ValidationError
+from byteplug.validator.exception import ValidationError, ValidationWarning
