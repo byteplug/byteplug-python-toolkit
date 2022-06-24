@@ -106,6 +106,21 @@ def test_flag_type():
     # test additional properties
     additional_properties_test(specs)
 
+    # test lazy validation
+    specs = {
+        'type': 'flag',
+        'option': 42,
+        'foo': 'bar'
+    }
+
+    errors = []
+    validate_specs(specs, errors=errors)
+
+    assert errors[0].path == "root"
+    assert errors[0].message == "'foo' property was unexpected"
+    assert errors[1].path == "root"
+    assert errors[1].message == "value of 'option' must be a boolean"
+
 def test_integer_type():
     # test minimal specs
     specs = {'type': 'integer'}
@@ -192,6 +207,27 @@ def test_integer_type():
     # test additional properties
     additional_properties_test(specs)
 
+    # test lazy validation
+    specs = {
+        'type': 'integer',
+        'minimum': False,
+        'maximum': "Hello world!",
+        'option': 42,
+        'foo': 'bar'
+    }
+
+    errors = []
+    validate_specs(specs, errors=errors)
+
+    assert errors[0].path == "root"
+    assert errors[0].message == "'foo' property was unexpected"
+    assert errors[1].path == "root"
+    assert errors[1].message == "'minimum' property is invalid (must be either a number of a dict)"
+    assert errors[2].path == "root"
+    assert errors[2].message == "'maximum' property is invalid (must be either a number of a dict)"
+    assert errors[3].path == "root"
+    assert errors[3].message == "value of 'option' must be a boolean"
+
 def test_decimal_type():
     # test minimal specs
     specs = {'type': 'decimal'}
@@ -256,6 +292,27 @@ def test_string_type():
 
     # test additional properties
     additional_properties_test(specs)
+
+    # test lazy validation
+    specs = {
+        'type': 'string',
+        'length': False,
+        'pattern': 42,
+        'option': 42,
+        'foo': 'br'
+    }
+
+    errors = []
+    validate_specs(specs, errors=errors)
+
+    assert errors[0].path == "root"
+    assert errors[0].message == "'foo' property was unexpected"
+    assert errors[1].path == "root"
+    assert errors[1].message == "'length' property is invalid (must be either a number of a dict)"
+    assert errors[2].path == "root"
+    assert errors[2].message == "value of 'pattern' must be a string"
+    assert errors[3].path == "root"
+    assert errors[3].message == "value of 'option' must be a boolean"
 
 def test_enum_type():
     # test minimal specs
@@ -347,6 +404,28 @@ def test_list_type():
     }
     validate_specs(nested_lists)
 
+    # test lazy validation
+    specs = {
+        'type': 'list',
+        'value': 42,
+        'length': False,
+        'option': 42,
+        'foo': 'br'
+    }
+
+
+    errors = []
+    validate_specs(specs, errors=errors)
+
+    assert errors[0].path == "root"
+    assert errors[0].message == "'foo' property was unexpected"
+    assert errors[1].path == "root.[]"
+    assert errors[1].message == "value must be a dict"
+    assert errors[2].path == "root"
+    assert errors[2].message == "'length' property is invalid (must be either a number of a dict)"
+    assert errors[3].path == "root"
+    assert errors[3].message == "value of 'option' must be a boolean"
+
 def test_tuple_type():
     # test minimal specs
     specs = {
@@ -414,6 +493,33 @@ def test_tuple_type():
         ]
     }
     validate_specs(nested_tuples)
+
+    # test lazy validation
+    specs = {
+        'type': 'tuple',
+        'values': [
+            {'type': 'foo'},
+            {'type': 'bar'},
+            {'type': 'quz'}
+        ],
+        'option': 42,
+        'foo': 'bar'
+    }
+
+
+    errors = []
+    validate_specs(specs, errors=errors)
+
+    assert errors[0].path == "root"
+    assert errors[0].message == "'foo' property was unexpected"
+    assert errors[1].path == "root.(0)"
+    assert errors[1].message == "value of 'type' is incorrect"
+    assert errors[2].path == "root.(1)"
+    assert errors[2].message == "value of 'type' is incorrect"
+    assert errors[3].path == "root.(2)"
+    assert errors[3].message == "value of 'type' is incorrect"
+    assert errors[4].path == "root"
+    assert errors[4].message == "value of 'option' must be a boolean"
 
 def test_map_type():
     # test minimal specs
@@ -491,3 +597,26 @@ def test_map_type():
         }
     }
     validate_specs(nested_maps)
+
+    # test lazy validation
+    specs = {
+        'type': 'map',
+        'fields': {
+            '-foo': {'type': 'flag'},
+            'bar': {'type': 'foo'}
+        },
+        'option': 42,
+        'foo': 'bar'
+    }
+
+    errors = []
+    validate_specs(specs, errors=errors)
+
+    assert errors[0].path == "root"
+    assert errors[0].message == "'foo' property was unexpected"
+    assert errors[1].path == "root"
+    assert errors[1].message == "'fields' has incorrect key name"
+    assert errors[2].path == "root.bar"
+    assert errors[2].message == "value of 'type' is incorrect"
+    assert errors[3].path == "root"
+    assert errors[3].message == "value of 'option' must be a boolean"

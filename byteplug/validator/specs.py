@@ -20,7 +20,6 @@ def validate_minimum_or_maximum_property(name, path, value, errors):
     def raise_error(path, message, errors):
         error = ValidationError(path, f"'{name}' property is invalid ({message})")
         errors.append(error)
-        return
 
     if type(value) in (int, float):
         # If omitted, value is to be understood as not exclusive
@@ -30,6 +29,7 @@ def validate_minimum_or_maximum_property(name, path, value, errors):
         extra_properties = set(value.keys()) - {'exclusive', 'value'}
         if extra_properties:
             raise_error(path, f"'{extra_properties.pop()}' property was unexpected", errors)
+            return
 
         exclusive = value.get('exclusive')
         if exclusive and type(exclusive) is not bool:
@@ -55,17 +55,16 @@ def validate_length_property(path, value, errors):
     def raise_error(path, message, errors):
         error = ValidationError(path, f"'length' property is invalid ({message})")
         errors.append(error)
-        return
 
     if type(value) in (int, float):
         if value < 0:
             raise_error(path, "length must be greater or equal to zero", errors)
-
     elif type(value) is dict:
         # Only 'minimum' and 'maximum' properties are accepted.
         extra_properties = set(value.keys()) - {'minimum', 'maximum'}
         if extra_properties:
             raise_error(path, f"'{extra_properties.pop()}' property was unexpected", errors)
+            return
 
         minimum = value.get('minimum')
         if minimum:
@@ -114,7 +113,6 @@ def validate_integer_type(path, block, errors, warnings):
         if maximum[1] < minimum[1]:
             error = ValidationError(path, "maximum must be lower than minimum")
             errors.append(error)
-            return
 
     # TODO; Code related to 'default' is disabled temporarily.
     # if 'default' in block and type(block['default']) not in (int, float):
@@ -141,7 +139,6 @@ def validate_string_type(path, block, errors, warnings):
         if type(pattern) is not str:
             error = ValidationError(path, "value of 'pattern' must be a string")
             errors.append(error)
-            return
 
     # TODO; Code related to 'default' is disabled temporarily.
     # if 'default' in block and type(block['default']) is not str:
@@ -157,7 +154,6 @@ def validate_list_type(path, block, errors, warnings):
     if not value:
         error = ValidationError(path, "'value' property is missing")
         errors.append(error)
-        return
 
     validate_value_type(path + '.[]', value, errors, warnings)
 
@@ -201,13 +197,12 @@ def validate_map_type(path, block, errors, warnings):
         errors.append(error)
         return
 
-    for key in fields.keys():
+    for key, value in fields.items():
         if not re.match(r"^[a-z]+(-[a-z]+)*$", key):
             error = ValidationError(path, "'fields' has incorrect key name")
             errors.append(error)
-            return
+            continue
 
-    for key, value in fields.items():
         validate_value_type(path + "." + key, value, errors, warnings)
 
 validators = {
@@ -242,7 +237,6 @@ def validate_value_type(path, block, errors, warnings):
     if extra_properties:
         error = ValidationError(path, f"'{extra_properties.pop()}' property was unexpected")
         errors.append(error)
-        return
 
     validators[type_][0](path, block, errors, warnings)
 
