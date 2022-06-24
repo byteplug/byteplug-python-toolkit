@@ -380,12 +380,12 @@ def test_tuple_type():
     for value in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
             validate_specs({'type': 'tuple', 'values': [value]})
-        assert e_info.value.path == "root.{0}"
+        assert e_info.value.path == "root.(0)"
         assert e_info.value.message == "value must be a dict"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs({'type': 'tuple', 'values': [{'type': 'foo'}]})
-    assert e_info.value.path == "root.{0}"
+    assert e_info.value.path == "root.(0)"
     assert e_info.value.message == "value of 'type' is incorrect"
 
     # test the 'option' property

@@ -182,7 +182,7 @@ def validate_tuple_type(path, block, errors, warnings):
         return
 
     for (index, value) in enumerate(values):
-        validate_value_type(path + '.{' + str(index) + '}', value, errors, warnings)
+        validate_value_type(path + '.(' + str(index) + ')', value, errors, warnings)
 
 def validate_map_type(path, block, errors, warnings):
     fields = block.get("fields")
