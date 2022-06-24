@@ -40,6 +40,8 @@ def process_integer_node(path, node, specs, errors, warnings):
         errors.append(error)
         return
 
+    node_errors = []
+
     minimum = read_minimum_value(specs)
     maximum = read_maximum_value(specs)
 
@@ -48,26 +50,26 @@ def process_integer_node(path, node, specs, errors, warnings):
         if is_exclusive:
             if not (node > value):
                 error = ValidationError(path, "value must be strictly greater than X")
-                errors.append(error)
-                return
+                node_errors.append(error)
         else:
             if not (node >= value):
                 error = ValidationError(path, "value must be equal or greater than X")
-                errors.append(error)
-                return
+                node_errors.append(error)
 
     if maximum:
         is_exclusive, value = maximum
         if is_exclusive:
             if not (node < value):
                 error = ValidationError(path, "value must be strictly less than X")
-                errors.append(error)
-                return
+                node_errors.append(error)
         else:
             if not (node <= value):
                 error = ValidationError(path, "value must be equal or less than X")
-                errors.append(error)
-                return
+                node_errors.append(error)
+
+    if len(node_errors) > 0:
+        errors.extend(node_errors)
+        return
 
     # TODO; warning if losing precision
     return int(node)
@@ -78,15 +80,18 @@ def process_decimal_node(path, node, specs, errors, warnings):
 def process_string_node(path, node, specs, errors, warnings):
 
     if type(node) is not str:
-        raise ValidationError(path, "was expecting a JSON string")
+        error = ValidationError(path, "was expecting a JSON string")
+        errors.append(error)
+        return
+
+    node_errors = []
 
     length = specs.get('length')
     if length is not None:
         if type(length) is int:
             if len(node) != length:
                 error = ValidationError(path, "length of string must be equal to X")
-                errors.append(error)
-                return
+                node_errors.append(error)
         else:
             minimum = length.get("minimum")
             maximum = length.get("maximum")
@@ -94,19 +99,22 @@ def process_string_node(path, node, specs, errors, warnings):
             if minimum:
                 if not (len(node) >= minimum):
                     error = ValidationError(path, "length of string must be greater or equal to X")
-                    errors.append(error)
-                    return
+                    node_errors.append(error)
 
             if maximum:
                 if not (len(node) <= maximum):
                     error = ValidationError(path, "length of string must be lower or equal to X")
-                    errors.append(error)
-                    return
+                    node_errors.append(error)
 
     pattern = specs.get('pattern')
     if pattern is not None:
         if not re.match(pattern, node):
-            raise ValidationError(path, "didnt match pattern")
+            error = ValidationError(path, "didnt match pattern")
+            node_errors.append(error)
+
+    if len(node_errors) > 0:
+        errors.extend(node_errors)
+        return
 
     return node
 
@@ -169,7 +177,6 @@ def process_tuple_node(path, node, specs, errors, warnings):
         error = ValidationError(path, "was expecting a JSON array")
         errors.append(error)
         return
-
 
     if len(node) != len(values):
         error = ValidationError(path, "was expecting array of N elements")

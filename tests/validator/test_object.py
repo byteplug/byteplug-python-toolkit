@@ -117,6 +117,20 @@ def test_integer_type():
     assert e_info.value.path == "root"
     assert e_info.value.message == "value must be strictly less than X"
 
+    # test lazy validation
+    specs = {
+        'type': 'integer',
+        'minimum': 43,
+        'maximum': 41
+    }
+
+    errors = []
+    object_to_document(42, specs, errors=errors)
+    assert errors[0].path == "root"
+    assert errors[0].message == "value must be equal or greater than X"
+    assert errors[1].path == "root"
+    assert errors[1].message == "value must be equal or less than X"
+
 def test_decimal_type():
     pass
 
@@ -199,6 +213,20 @@ def test_string_type():
             object_to_document(invalid_value, specs)
         assert e_info.value.path == "root"
         assert e_info.value.message == "didnt match pattern"
+
+    # test lazy validation
+    specs = {
+        'type': 'string',
+        'length': 42,
+        'pattern': "^[b-z]+$"
+    }
+
+    errors = []
+    object_to_document(43* 'a', specs, errors=errors)
+    assert errors[0].path == "root"
+    assert errors[0].message == "length of string must be equal to X"
+    assert errors[1].path == "root"
+    assert errors[1].message == "didnt match pattern"
 
 def test_enum_type():
     specs = {
@@ -290,6 +318,20 @@ def test_list_type():
     assert e_info.value.path == "root"
     assert e_info.value.message == "length of list must be lower or equal to X"
 
+    # test lazy validation
+    specs = {
+        'type': 'list',
+        'value': {'type': 'integer'},
+    }
+
+    errors = []
+    object_to_document([True, 42, "Hello world!"], specs, errors=errors)
+
+    assert errors[0].path == "root.[0]"
+    assert errors[0].message == "was expecting an integer"
+    assert errors[1].path == "root.[2]"
+    assert errors[1].message == "was expecting an integer"
+
 def test_tuple_type():
     specs = {
         'type': 'tuple',
@@ -312,6 +354,16 @@ def test_tuple_type():
         object_to_document((False, True, 42, "foo"), specs)
     assert e_info.value.path == "root"
     assert e_info.value.message == "was expecting tuple of N elements"
+
+    # test lazy validation
+    errors = []
+    object_to_document(("foo", True, 42), specs, errors=errors)
+    assert errors[0].path == "root.(0)"
+    assert errors[0].message == "was expecting a boolean"
+    assert errors[1].path == "root.(1)"
+    assert errors[1].message == "was expecting an integer"
+    assert errors[2].path == "root.(2)"
+    assert errors[2].message == "was expecting a string"
 
 def test_map_type():
     specs = {
@@ -338,3 +390,19 @@ def test_map_type():
     assert document == '{"foo": true, "bar": 42, "quz": "Hello world!"}'
 
     # TODO; More things to test here.
+
+    # test lazy validation
+    errors = []
+
+    value = {
+        "foo": "Hello world!",
+        "bar": True,
+        "quz": 42
+    }
+    object_to_document(value, specs, errors=errors)
+    assert errors[0].path == "root.foo"
+    assert errors[0].message == "was expecting a boolean"
+    assert errors[1].path == "root.bar"
+    assert errors[1].message == "was expecting an integer"
+    assert errors[2].path == "root.quz"
+    assert errors[2].message == "was expecting a string"
