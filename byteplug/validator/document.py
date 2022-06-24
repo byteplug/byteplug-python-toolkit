@@ -23,18 +23,22 @@ from byteplug.validator.exception import ValidationError
 
 __all__ = ['document_to_object']
 
-def process_flag_node(path, node, specs):
+def process_flag_node(path, node, specs, errors, warnings):
     if type(node) is not bool:
-        raise ValidationError(path, "was expecting a JSON boolean")
+        error = ValidationError(path, "was expecting a JSON boolean")
+        errors.append(error)
+        return
 
     return node
 
-def process_integer_node(path, node, specs):
+def process_integer_node(path, node, specs, errors, warnings):
 
     # must be an number, converted to int or float
     # assert type(node) in (int, float)
     if type(node) not in (int, float):
-        raise ValidationError(path, "was expecting a JSON number")
+        error = ValidationError(path, "was expecting a JSON number")
+        errors.append(error)
+        return
 
     minimum = read_minimum_value(specs)
     maximum = read_maximum_value(specs)
@@ -43,27 +47,35 @@ def process_integer_node(path, node, specs):
         is_exclusive, value = minimum
         if is_exclusive:
             if not (node > value):
-                raise ValidationError(path, "value must be strictly greater than X")
+                error = ValidationError(path, "value must be strictly greater than X")
+                errors.append(error)
+                return
         else:
             if not (node >= value):
-                raise ValidationError(path, "value must be equal or greater than X")
+                error = ValidationError(path, "value must be equal or greater than X")
+                errors.append(error)
+                return
 
     if maximum:
         is_exclusive, value = maximum
         if is_exclusive:
             if not (node < value):
-                raise ValidationError(path, "value must be strictly less than X")
+                error = ValidationError(path, "value must be strictly less than X")
+                errors.append(error)
+                return
         else:
             if not (node <= value):
-                raise ValidationError(path, "value must be equal or less than X")
+                error = ValidationError(path, "value must be equal or less than X")
+                errors.append(error)
+                return
 
     # TODO; warning if losing precision
     return int(node)
 
-def process_decimal_node(path, node, specs):
+def process_decimal_node(path, node, specs, errors, warnings):
     pass
 
-def process_string_node(path, node, specs):
+def process_string_node(path, node, specs, errors, warnings):
 
     if type(node) is not str:
         raise ValidationError(path, "was expecting a JSON string")
@@ -72,18 +84,24 @@ def process_string_node(path, node, specs):
     if length is not None:
         if type(length) is int:
             if len(node) != length:
-                raise ValidationError(path, "length of string must be equal to X")
+                error = ValidationError(path, "length of string must be equal to X")
+                errors.append(error)
+                return
         else:
             minimum = length.get("minimum")
             maximum = length.get("maximum")
 
             if minimum:
                 if not (len(node) >= minimum):
-                    raise ValidationError(path, "length of string must be greater or equal to X")
+                    error = ValidationError(path, "length of string must be greater or equal to X")
+                    errors.append(error)
+                    return
 
             if maximum:
                 if not (len(node) <= maximum):
-                    raise ValidationError(path, "length of string must be lower or equal to X")
+                    error = ValidationError(path, "length of string must be lower or equal to X")
+                    errors.append(error)
+                    return
 
     pattern = specs.get('pattern')
     if pattern is not None:
@@ -92,77 +110,95 @@ def process_string_node(path, node, specs):
 
     return node
 
-def process_enum_node(path, node, specs):
+def process_enum_node(path, node, specs, errors, warnings):
     if type(node) is not str:
-        raise ValidationError(path, "was expecting a JSON string")
+        error = ValidationError(path, "was expecting a JSON string")
+        errors.append(error)
+        return
 
     values = specs['values']
     if node not in values:
-        raise ValidationError(path, "value was expected to be one of [foo, bar, quz]")
+        error = ValidationError(path, "value was expected to be one of [foo, bar, quz]")
+        errors.append(error)
+        return
 
     return node
 
-def process_list_node(path, node, specs):
+def process_list_node(path, node, specs, errors, warnings):
     value = specs['value']
 
     if type(node) is not list:
-        raise ValidationError(path, "was expecting a JSON array")
+        error = ValidationError(path, "was expecting a JSON array")
+        errors.append(error)
+        return
 
     length = specs.get('length')
     if length is not None:
         if type(length) is int:
             if len(node) != length:
-                raise ValidationError(path, "length of list must be equal to X")
+                error = ValidationError(path, "length of list must be equal to X")
+                errors.append(error)
+                return
         else:
             minimum = length.get("minimum")
             maximum = length.get("maximum")
 
             if minimum:
                 if not (len(node) >= minimum):
-                    raise ValidationError(path, "length of list must be greater or equal to X")
+                    error = ValidationError(path, "length of list must be greater or equal to X")
+                    errors.append(error)
+                    return
 
             if maximum:
                 if not (len(node) <= maximum):
-                    raise ValidationError(path, "length of list must be lower or equal to X")
+                    error = ValidationError(path, "length of list must be lower or equal to X")
+                    errors.append(error)
+                    return
 
     # TODO; Rework this.
     adjusted_node = []
     for (index, item) in enumerate(node):
-        adjusted_node.append(adjust_node(path + '.[' + str(index) + ']', item, value))
+        adjusted_node.append(adjust_node(path + '.[' + str(index) + ']', item, value, errors, warnings))
 
     return adjusted_node
 
-def process_tuple_node(path, node, specs):
+def process_tuple_node(path, node, specs, errors, warnings):
     values = specs['values']
 
     if type(node) is not list:
-        raise ValidationError(path, "was expecting a JSON array")
+        error = ValidationError(path, "was expecting a JSON array")
+        errors.append(error)
+        return
 
 
     if len(node) != len(values):
-        raise ValidationError(path, "was expecting array of N elements")
+        error = ValidationError(path, "was expecting array of N elements")
+        errors.append(error)
+        return
 
     # TODO; Rework this.
     adjusted_node = []
     for (index, item) in enumerate(node):
         adjusted_node.append(
-            adjust_node(path + '.(' + str(index) + ')', item, values[index])
+            adjust_node(path + '.(' + str(index) + ')', item, values[index], errors, warnings)
         )
 
     return tuple(adjusted_node)
 
 
-def process_map_node(path, node, specs):
+def process_map_node(path, node, specs, errors, warnings):
     fields = specs['fields']
 
     if type(node) is not dict:
-        raise ValidationError(path, "was expecting a JSON object")
+        error = ValidationError(path, "was expecting a JSON object")
+        errors.append(error)
+        return
 
     # TODO; More things to do here.
     adjusted_node = {}
     for key, value in fields.items():
         if key in node:
-            adjusted_node[key] = adjust_node(path + f'.{key}', node[key], value)
+            adjusted_node[key] = adjust_node(path + f'.{key}', node[key], value, errors, warnings)
 
     return adjusted_node
 
@@ -177,17 +213,40 @@ adjust_node_map = {
     'map'    : process_map_node
 }
 
-def adjust_node(path, node, specs):
+def adjust_node(path, node, specs, errors, warnings):
     optional = specs.get('option', False)
     if not optional and node is None:
-        raise ValueError(path, "value cant be null")
+        error = ValueError(path, "value cant be null")
+        errors.append(error)
+        return
     elif optional and node is None:
         return None
     else:
-        return adjust_node_map[specs['type']](path, node, specs)
+        return adjust_node_map[specs['type']](path, node, specs, errors, warnings)
 
-def document_to_object(document, specs):
+def document_to_object(document, specs, errors=None, warnings=None):
     """ Convert a JSON document to its Python equivalent. """
 
+    assert errors is None or errors == [], "if the errors parameter is set, it must be an empty list"
+    assert warnings is None or warnings == [], "if the warnings parameter is set, it must be an empty list"
+
+    # We detect if users want lazy validation when they pass an empty list as
+    # the errors parameters.
+    lazy_validation = False
+    if errors is None:
+        errors = []
+    else:
+        lazy_validation = True
+
+    if warnings is None:
+        warnings = []
+
     object = json.loads(document)
-    return adjust_node("root", object, specs)
+    adjusted_object = adjust_node("root", object, specs, errors, warnings)
+
+    # If we're not lazy-validating the specs, we raise the first error that
+    # occurred.
+    if not lazy_validation and len(errors) > 0:
+        raise errors[0]
+
+    return adjusted_object
