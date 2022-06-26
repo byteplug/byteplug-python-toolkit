@@ -48,9 +48,6 @@ def validate_minimum_or_maximum_property(name, path, value, errors):
         errors.append(error)
 
 def validate_length_property(path, value, errors):
-    # def raise_error(path, message, errors):
-    #     error = ValidationError(path, f"'length' property is invalid ({message})")
-    #     errors.append(error)
 
     path = path + '.length'
 
@@ -111,8 +108,18 @@ def validate_integer_type(path, block, errors, warnings):
             errors.append(error)
 
 def validate_decimal_type(path, block, errors, warnings):
-    # TODO; To be implemented.
-    pass
+    minimum = None
+    if 'minimum' in block:
+        minimum = validate_minimum_or_maximum_property('minimum', path, block['minimum'], errors)
+
+    maximum = None
+    if 'maximum' in block:
+        maximum = validate_minimum_or_maximum_property('maximum', path, block['maximum'], errors)
+
+    if minimum and maximum:
+        if maximum[1] < minimum[1]:
+            error = ValidationError(path, "minimum must be lower than maximum")
+            errors.append(error)
 
 def validate_string_type(path, block, errors, warnings):
     if 'length' in block:
@@ -126,14 +133,43 @@ def validate_string_type(path, block, errors, warnings):
             errors.append(error)
 
 def validate_enum_type(path, block, errors, warnings):
-    # TODO; To be implemented.
-    pass
+    values = block.get('values')
+    if values is None:
+        error = ValidationError(path, "'values' property is missing")
+        errors.append(error)
+        return
+
+    if type(values) is not list:
+        error = ValidationError(path + '.values', "value must be a list")
+        errors.append(error)
+        return
+
+    if len(values) == 0:
+        error = ValidationError(path + '.values', "must contain at least one value")
+        errors.append(error)
+        return
+
+    # Check for duplicates and check for validity of their value.
+    processed_values = []
+    for value in values:
+        if not re.match(r"^[a-z]+(-[a-z]+)*$", value):
+            error = ValidationError(path + '.values', f"'{value}' is an incorrect value")
+            errors.append(error)
+            continue
+
+        if value in processed_values:
+            error = ValidationError(path + '.values', f"'{value}' value is duplicated")
+            errors.append(error)
+            continue
+        else:
+            processed_values.append(value)
 
 def validate_list_type(path, block, errors, warnings):
     value = block.get('value')
     if not value:
         error = ValidationError(path, "'value' property is missing")
         errors.append(error)
+        return
 
     validate_block(path + '.[]', value, errors, warnings)
 
@@ -250,6 +286,9 @@ def validate_specs(specs, errors=None, warnings=None):
     - value must be greater or equal to zero
     - minimum must be lower than maximum
     - length must be greater or equal to zero
+    - must contain at least one value
+    - '<foo>' is an incorrect value
+    - '<foo>' value is duplicated
     - must contain at least one field
     - '<foo>' is an incorrect key name
 

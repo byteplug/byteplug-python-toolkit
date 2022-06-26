@@ -232,22 +232,112 @@ def test_integer_type():
     assert errors[3].path == "root.option"
     assert errors[3].message == "value must be a bool"
 
-# def test_decimal_type():
-#     # test minimal specs
-#     specs = {'type': 'decimal'}
-#     validate_specs(specs)
+def test_decimal_type():
+    # test minimal specs
+    specs = {'type': 'decimal'}
+    validate_specs(specs)
 
-#     # test 'foo'
-#     pass
+    # test 'minimum' property
+    validate_specs(specs | {'minimum': 42})
+    validate_specs(specs | {'minimum': {'value': 42}})
+    validate_specs(specs | {'minimum': {'exclusive': False, 'value': 42}})
+    validate_specs(specs | {'minimum': {'exclusive': True, 'value': 42}})
 
-#     # test 'bar'
-#     pass
+    for invalid_value in [False, True, "Hello world!"]:
+        with pytest.raises(ValidationError) as e_info:
+            validate_specs(specs | {'minimum': invalid_value})
+        assert e_info.value.path == "root.minimum"
+        assert e_info.value.message == "value must be either a number or a dict"
 
-#     # test the 'option' property
-#     option_property_test(specs)
+    with pytest.raises(ValidationError) as e_info:
+        validate_specs(specs | {'minimum': {'exclusive': False}})
+    assert e_info.value.path == "root.minimum"
+    assert e_info.value.message == "'value' property is missing"
 
-#     # test additional properties
-#     additional_properties_test(specs)
+    for invalid_value in [42, "Hello world!"]:
+        with pytest.raises(ValidationError) as e_info:
+            validate_specs(specs | {'minimum': {'exclusive': invalid_value, 'value': 42}})
+        assert e_info.value.path == "root.minimum.exclusive"
+        assert e_info.value.message == "value must be a bool"
+
+    for invalid_value in [False, True, "Hello world!"]:
+        with pytest.raises(ValidationError) as e_info:
+            validate_specs(specs | {'minimum': {'exclusive': False, 'value': invalid_value}})
+        assert e_info.value.path == "root.minimum.value"
+        assert e_info.value.message == "value must be a number"
+
+    with pytest.raises(ValidationError) as e_info:
+        validate_specs(specs | {'minimum': {'value': 42, 'foo': 'bar'}})
+    assert e_info.value.path == "root.minimum"
+    assert e_info.value.message == "'foo' property is unexpected"
+
+    # test 'maximum' property
+    validate_specs(specs | {'maximum': 42})
+    validate_specs(specs | {'maximum': {'value': 42}})
+    validate_specs(specs | {'maximum': {'exclusive': False, 'value': 42}})
+    validate_specs(specs | {'maximum': {'exclusive': True, 'value': 42}})
+
+    for invalid_value in [False, True, "Hello world!"]:
+        with pytest.raises(ValidationError) as e_info:
+            validate_specs(specs | {'maximum': invalid_value})
+        assert e_info.value.path == "root.maximum"
+        assert e_info.value.message == "value must be either a number or a dict"
+
+    with pytest.raises(ValidationError) as e_info:
+        validate_specs(specs | {'maximum': {'exclusive': False}})
+    assert e_info.value.path == "root.maximum"
+    assert e_info.value.message == "'value' property is missing"
+
+    for invalid_value in [42, "Hello world!"]:
+        with pytest.raises(ValidationError) as e_info:
+            validate_specs(specs | {'maximum': {'exclusive': invalid_value, 'value': 42}})
+        assert e_info.value.path == "root.maximum.exclusive"
+        assert e_info.value.message == "value must be a bool"
+
+    for invalid_value in [False, True, "Hello world!"]:
+        with pytest.raises(ValidationError) as e_info:
+            validate_specs(specs | {'maximum': {'exclusive': False, 'value': invalid_value}})
+        assert e_info.value.path == "root.maximum.value"
+        assert e_info.value.message == "value must be a number"
+
+    with pytest.raises(ValidationError) as e_info:
+        validate_specs(specs | {'maximum': {'value': 42, 'foo': 'bar'}})
+    assert e_info.value.path == "root.maximum"
+    assert e_info.value.message == "'foo' property is unexpected"
+
+    # test minimum must be lower than maximum
+    for minimum, maximum in ((42, 0), (-9, -10), (1, -1)):
+        with pytest.raises(ValidationError) as e_info:
+            validate_specs(specs | {'minimum': minimum, 'maximum': maximum})
+        assert e_info.value.path == "root"
+        assert e_info.value.message == "minimum must be lower than maximum"
+
+    # test the 'option' property
+    option_property_test(specs, "root")
+
+    # test additional properties
+    additional_properties_test(specs)
+
+    # test lazy validation
+    specs = {
+        'type': 'decimal',
+        'minimum': False,
+        'maximum': "Hello world!",
+        'option': 42,
+        'foo': 'bar'
+    }
+
+    errors = []
+    validate_specs(specs, errors=errors)
+
+    assert errors[0].path == "root"
+    assert errors[0].message == "'foo' property is unexpected"
+    assert errors[1].path == "root.minimum"
+    assert errors[1].message == "value must be either a number or a dict"
+    assert errors[2].path == "root.maximum"
+    assert errors[2].message == "value must be either a number or a dict"
+    assert errors[3].path == "root.option"
+    assert errors[3].message == "value must be a bool"
 
 def test_string_type():
     # test minimal specs
@@ -303,7 +393,7 @@ def test_string_type():
         'length': False,
         'pattern': 42,
         'option': 42,
-        'foo': 'br'
+        'foo': 'bar'
     }
 
     errors = []
@@ -318,22 +408,66 @@ def test_string_type():
     assert errors[3].path == "root.option"
     assert errors[3].message == "value must be a bool"
 
-# def test_enum_type():
-#     # test minimal specs
-#     specs = {'type': 'enum'}
-#     validate_specs(specs)
+def test_enum_type():
+    # test minimal specs
+    specs = {
+        'type': 'enum',
+        'values': ['foo', 'bar', 'quz']
+    }
+    validate_specs(specs)
 
-#     # test 'foo'
-#     pass
+    with pytest.raises(ValidationError) as e_info:
+        validate_specs({'type': 'enum'})
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "'values' property is missing"
 
-#     # test 'bar'
-#     pass
+    # test 'values' property
+    for value in [True, False, 42, "Hello world!"]:
+        with pytest.raises(ValidationError) as e_info:
+            validate_specs({'type': 'enum', 'values': value})
+        assert e_info.value.path == "root.values"
+        assert e_info.value.message == "value must be a list"
 
-#     # test the 'option' property
-#     option_property_test(specs)
+    with pytest.raises(ValidationError) as e_info:
+        validate_specs({'type': 'enum', 'values': []})
+    assert e_info.value.path == "root.values"
+    assert e_info.value.message == "must contain at least one value"
 
-#     # test additional properties
-#     additional_properties_test(specs)
+    with pytest.raises(ValidationError) as e_info:
+        validate_specs({'type': 'enum', 'values': ['-foo', 'bar', 'quz']})
+    assert e_info.value.path == "root.values"
+    assert e_info.value.message == "'-foo' is an incorrect value"
+
+    with pytest.raises(ValidationError) as e_info:
+        validate_specs({'type': 'enum', 'values': ['foo', 'bar', 'quz', 'foo']})
+    assert e_info.value.path == "root.values"
+    assert e_info.value.message == "'foo' value is duplicated"
+
+    # test the 'option' property
+    option_property_test(specs, 'root')
+
+    # test additional properties
+    additional_properties_test(specs)
+
+    # test lazy validation
+    specs = {
+        'type': 'enum',
+        'values': ['-foo', 'bar', 'quz', 'bar'],
+        'option': 42,
+        'foo': 'bar'
+    }
+
+    errors = []
+    validate_specs(specs, errors=errors)
+
+    assert errors[0].path == "root"
+    assert errors[0].message == "'foo' property is unexpected"
+    assert errors[1].path == "root.values"
+    assert errors[1].message == "'-foo' is an incorrect value"
+    assert errors[2].path == "root.values"
+    assert errors[2].message == "'bar' value is duplicated"
+    assert errors[3].path == "root.option"
+    assert errors[3].message == "value must be a bool"
 
 def test_list_type():
     # test minimal specs
