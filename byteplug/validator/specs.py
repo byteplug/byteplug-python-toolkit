@@ -12,92 +12,88 @@ from byteplug.validator.exception import ValidationError
 __all__ = ['validate_specs']
 
 def validate_minimum_or_maximum_property(name, path, value, errors):
-    # This function raises validation error with message "'minimum' property is
-    # invalid (whatever)" where 'whatever' is a custom message; it doesn't try
-    # to uniformize error messages. It also returns the actual minimal value so
-    # the caller can perform further checking easily.
-
-    def raise_error(path, message, errors):
-        error = ValidationError(path, f"'{name}' property is invalid ({message})")
-        errors.append(error)
+    # This function also returns the actual minimal (or maximum) value so the
+    # caller can perform further checking easily.
 
     if type(value) in (int, float):
-        # If omitted, value is to be understood as not exclusive
+        # If omitted, value is to be understood as not exclusive.
         return (False, value)
     elif type(value) is dict:
         # Only 'exclusive' and 'value' properties are accepted.
         extra_properties = set(value.keys()) - {'exclusive', 'value'}
         if extra_properties:
-            raise_error(path, f"'{extra_properties.pop()}' property was unexpected", errors)
+            error = ValidationError(path + f'.{name}', f"'{extra_properties.pop()}' property is unexpected")
+            errors.append(error)
             return
 
         exclusive = value.get('exclusive')
         if exclusive and type(exclusive) is not bool:
-            raise_error(path, "value of 'exclusive' must be a boolean", errors)
+            error = ValidationError(path + f'.{name}.exclusive', f"value must be a bool")
+            errors.append(error)
         else:
             exclusive = False
 
         value_ = value.get('value')
         if value_ == None:
-            raise_error(path, "'value' property is missing", errors)
+            error = ValidationError(path + f'.{name}', "'value' property is missing")
+            errors.append(error)
         elif type(value_) not in (int, float):
-            raise_error(path, "value of 'value' must be a number", errors)
+            # TODO; Could raise a warning if type is not integer.
+            error = ValidationError(path + f'.{name}.value', "value must be a number")
+            errors.append(error)
 
         return (exclusive, value_)
     else:
-        raise_error(path, "must be either a number of a dict", errors)
+        error = ValidationError(path + f'.{name}', f"value must be either a number or a dict")
+        errors.append(error)
 
 def validate_length_property(path, value, errors):
-    # This function raises validation error with message "'length' property is
-    # invalid (whatever)" where 'whatever' is a custom message; it doesn't try
-    # to uniformize error messages.
+    # def raise_error(path, message, errors):
+    #     error = ValidationError(path, f"'length' property is invalid ({message})")
+    #     errors.append(error)
 
-    def raise_error(path, message, errors):
-        error = ValidationError(path, f"'length' property is invalid ({message})")
-        errors.append(error)
+    path = path + '.length'
 
     if type(value) in (int, float):
         if value < 0:
-            raise_error(path, "length must be greater or equal to zero", errors)
+            error = ValidationError(path, "must be greater or equal to zero")
+            errors.append(error)
     elif type(value) is dict:
         # Only 'minimum' and 'maximum' properties are accepted.
         extra_properties = set(value.keys()) - {'minimum', 'maximum'}
         if extra_properties:
-            raise_error(path, f"'{extra_properties.pop()}' property was unexpected", errors)
+            error = ValidationError(path, f"'{extra_properties.pop()}' property is unexpected")
+            errors.append(error)
             return
 
         minimum = value.get('minimum')
         if minimum:
             if type(minimum) not in (int, float):
-                raise_error(path, "value of 'minimum' must be a number", errors)
+                error = ValidationError(path + '.minimum', "value must be a number")
+                errors.append(error)
             if minimum < 0:
-                raise_error(path, "value of 'length.minimum' must be greater or equal to zero", errors)
+                error = ValidationError(path + '.minimum', "must be greater or equal to zero")
+                errors.append(error)
 
         maximum = value.get('maximum')
         if maximum:
             if type(maximum) not in (int, float):
-                raise_error(path, "value of 'maximum' must be a number", errors)
+                error = ValidationError(path + '.maximum', "value must be a number")
+                errors.append(error)
             if maximum < 0:
-                raise_error(path, "value of 'length.maximum' must be greater or equal to zero", errors)
+                error = ValidationError(path + '.maximum', "must be greater or equal to zero")
+                errors.append(error)
 
         if minimum != None and maximum != None:
             if minimum > maximum:
-                raise_error(path, "length.maximum must be greater than length.minimum", errors)
+                error = ValidationError(path, "minimum must be lower than maximum")
+                errors.append(error)
     else:
-        raise_error(path, "must be either a number of a dict", errors)
-
-def validate_option_property(path, block, errors, warnings):
-    if 'option' in block and type(block['option']) is not bool:
-        error = ValidationError(path, "value of 'option' must be a boolean")
+        error = ValidationError(path, "value must be either a number or a dict")
         errors.append(error)
-        return
 
 def validate_flag_type(path, block, errors, warnings):
-    # TODO; Code related to 'default' is disabled temporarily.
-    # if 'default' in block and type(block['default']) is not bool:
-    #     error = ValidationError(path, "value of 'default' must be a boolean")
-    #     errors.append(error)
-    #     return
+    # Nothing to do.
     pass
 
 def validate_integer_type(path, block, errors, warnings):
@@ -111,42 +107,26 @@ def validate_integer_type(path, block, errors, warnings):
 
     if minimum and maximum:
         if maximum[1] < minimum[1]:
-            error = ValidationError(path, "maximum must be lower than minimum")
+            error = ValidationError(path, "minimum must be lower than maximum")
             errors.append(error)
-
-    # TODO; Code related to 'default' is disabled temporarily.
-    # if 'default' in block and type(block['default']) not in (int, float):
-    #     error = ValidationError(path, "value of 'default' must be a number")
-    #     errors.append(error)
-    #     return
 
 def validate_decimal_type(path, block, errors, warnings):
     # TODO; To be implemented.
     pass
 
-    # TODO; Code related to 'default' is disabled temporarily.
-    # if 'default' in block and type(block['default']) not in (int, float):
-    #     error = ValidationError(path, "value of 'default' must be a number")
-    #     errors.append(error)
-    #     return
-
 def validate_string_type(path, block, errors, warnings):
     if 'length' in block:
         validate_length_property(path, block['length'], errors)
 
+    # TODO; Check validity of the regex.
     pattern = block.get('pattern')
     if pattern != None:
         if type(pattern) is not str:
-            error = ValidationError(path, "value of 'pattern' must be a string")
+            error = ValidationError(path + '.pattern', "value must be a string")
             errors.append(error)
 
-    # TODO; Code related to 'default' is disabled temporarily.
-    # if 'default' in block and type(block['default']) is not str:
-    #     error = ValidationError(path, "value of 'default' must be a number")
-    #     errors.append(error)
-    #     return
-
 def validate_enum_type(path, block, errors, warnings):
+    # TODO; To be implemented.
     pass
 
 def validate_list_type(path, block, errors, warnings):
@@ -155,7 +135,7 @@ def validate_list_type(path, block, errors, warnings):
         error = ValidationError(path, "'value' property is missing")
         errors.append(error)
 
-    validate_value_type(path + '.[]', value, errors, warnings)
+    validate_block(path + '.[]', value, errors, warnings)
 
     if 'length' in block:
         validate_length_property(path, block['length'], errors)
@@ -168,17 +148,17 @@ def validate_tuple_type(path, block, errors, warnings):
         return
 
     if type(values) is not list:
-        error = ValidationError(path, "value of 'values' must be a list")
+        error = ValidationError(path + '.values', "value must be a list")
         errors.append(error)
         return
 
     if len(values) == 0:
-        error = ValidationError(path, "must contain at least one value")
+        error = ValidationError(path + '.values', "must contain at least one value")
         errors.append(error)
         return
 
     for (index, value) in enumerate(values):
-        validate_value_type(path + '.(' + str(index) + ')', value, errors, warnings)
+        validate_block(path + '.(' + str(index) + ')', value, errors, warnings)
 
 def validate_map_type(path, block, errors, warnings):
     fields = block.get("fields")
@@ -188,22 +168,22 @@ def validate_map_type(path, block, errors, warnings):
         return
 
     if type(fields) is not dict:
-        error = ValidationError(path, "'fields' property must be a dict")
+        error = ValidationError(path + '.fields', "value must be a dict")
         errors.append(error)
         return
 
     if len(fields) == 0:
-        error = ValidationError(path, "must contain at least one field")
+        error = ValidationError(path + '.fields', "must contain at least one field")
         errors.append(error)
         return
 
     for key, value in fields.items():
         if not re.match(r"^[a-z]+(-[a-z]+)*$", key):
-            error = ValidationError(path, "'fields' has incorrect key name")
+            error = ValidationError(path + '.fields', f"'{key}' is an incorrect key name")
             errors.append(error)
             continue
 
-        validate_value_type(path + "." + key, value, errors, warnings)
+        validate_block(path + "." + key, value, errors, warnings)
 
 validators = {
     "flag"     : (validate_flag_type,     []),
@@ -216,7 +196,7 @@ validators = {
     "map"      : (validate_map_type,      ['fields'])
 }
 
-def validate_value_type(path, block, errors, warnings):
+def validate_block(path, block, errors, warnings):
     if type(block) is not dict:
         error = ValidationError(path, "value must be a dict")
         errors.append(error)
@@ -235,27 +215,45 @@ def validate_value_type(path, block, errors, warnings):
 
     extra_properties = set(block.keys()) - set(validators[type_][1]) - {'type', 'option'}
     if extra_properties:
-        error = ValidationError(path, f"'{extra_properties.pop()}' property was unexpected")
+        error = ValidationError(path, f"'{extra_properties.pop()}' property is unexpected")
         errors.append(error)
 
     validators[type_][0](path, block, errors, warnings)
 
-    validate_option_property(path, block, errors, warnings)
+    if 'option' in block and type(block['option']) is not bool:
+        error = ValidationError(path + '.option', "value must be a bool")
+        errors.append(error)
 
 def validate_root_block(block, errors, warnings):
     if type(block) is not dict:
         # Early termination if the root block is not a dict.
-        error = ValidationError("root", "root element must be a dict")
+        error = ValidationError("root", "root value must be a dict")
         errors.append(error)
         return
 
-    validate_value_type("root", block, errors, warnings)
+    validate_block("root", block, errors, warnings)
 
 def validate_specs(specs, errors=None, warnings=None):
     """ Validate the YAML specs.
 
     This function checks if the structure of the YAML specs is correct. If not,
     the ValidatorError exception is raised.
+
+    Possible error messages.
+
+    - root value must be a dict
+    - value of 'type' is incorrect
+    - value must be a bool|int|float|number|str|list|tuple|dict
+    - value must be either a number or a dict
+    - '<foo>' property is missing
+    - '<foo>' property is unexpected
+    - value must be greater or equal to zero
+    - minimum must be lower than maximum
+    - length must be greater or equal to zero
+    - must contain at least one field
+    - '<foo>' is an incorrect key name
+
+    No warnings are defined yet (will never generate warnings).
     """
 
     assert errors is None or errors == [], "if the errors parameter is set, it must be an empty list"

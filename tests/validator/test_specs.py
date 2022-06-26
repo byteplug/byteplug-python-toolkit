@@ -23,63 +23,71 @@ INVALID_NAMES = [
     "foo--bar"
 ]
 
-def bool_value_property_test(specs, key):
+def bool_value_property_test(specs, key, path):
     validate_specs(specs | {key: True})
     validate_specs(specs | {key: False})
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {key: 42})
-    assert e_info.value.message == f"value of '{key}' must be a boolean"
+    assert e_info.value.path == f"{path}.{key}"
+    assert e_info.value.message == f"value must be a bool"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {key: "Hello world!"})
-    assert e_info.value.message == f"value of '{key}' must be a boolean"
+    assert e_info.value.path == f"{path}.{key}"
+    assert e_info.value.message == f"value must be a bool"
 
-def number_value_property_test(specs, key):
+def number_value_property_test(specs, key, path):
     validate_specs(specs | {key: 42})
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {key: False})
-    assert e_info.value.message == f"value of '{key}' must be a number"
+    assert e_info.value.path == f"{path}.{key}"
+    assert e_info.value.message == f"value must be a number"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {key: True})
-    assert e_info.value.message == f"value of '{key}' must be a number"
+    assert e_info.value.path == f"{path}.{key}"
+    assert e_info.value.message == f"value must be a number"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {key: "Hello world!"})
-    assert e_info.value.message == f"value of '{key}' must be a number"
+    assert e_info.value.path == f"{path}.{key}"
+    assert e_info.value.message == f"value must be a number"
 
-def string_value_property_test(specs, key):
+def string_value_property_test(specs, key, path):
     validate_specs(specs | {key: "Hello world!"})
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {key: False})
-    assert e_info.value.message == f"value of '{key}' must be a string"
+    assert e_info.value.path == f"{path}.{key}"
+    assert e_info.value.message == f"value must be a string"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {key: True})
-    assert e_info.value.message == f"value of '{key}' must be a string"
+    assert e_info.value.path == f"{path}.{key}"
+    assert e_info.value.message == f"value must be a string"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {key: 42})
-    assert e_info.value.message == f"value of '{key}' must be a string"
+    assert e_info.value.path == f"{path}.{key}"
+    assert e_info.value.message == f"value must be a string"
 
-def option_property_test(specs):
-    bool_value_property_test(specs, "option")
+def option_property_test(specs, path):
+    bool_value_property_test(specs, "option", path)
 
 def additional_properties_test(specs):
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'foo': 'bar'})
     assert e_info.value.path == "root"
-    assert e_info.value.message == "'foo' property was unexpected"
+    assert e_info.value.message == "'foo' property is unexpected"
 
 def test_root_block():
     # root block must be a dict
     for specs in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
             validate_specs(specs)
-        assert e_info.value.message == "root element must be a dict"
+        assert e_info.value.message == "root value must be a dict"
 
     # 'type' property is missing
     with pytest.raises(ValidationError) as e_info:
@@ -96,12 +104,8 @@ def test_flag_type():
     specs = {'type': 'flag'}
     validate_specs(specs)
 
-    # TODO; Code related to 'default' is disabled temporarily.
-    # # test the 'default' property
-    # bool_value_property_test(specs, 'default')
-
     # test the 'option' property
-    option_property_test(specs)
+    option_property_test(specs, "root")
 
     # test additional properties
     additional_properties_test(specs)
@@ -117,9 +121,9 @@ def test_flag_type():
     validate_specs(specs, errors=errors)
 
     assert errors[0].path == "root"
-    assert errors[0].message == "'foo' property was unexpected"
-    assert errors[1].path == "root"
-    assert errors[1].message == "value of 'option' must be a boolean"
+    assert errors[0].message == "'foo' property is unexpected"
+    assert errors[1].path == "root.option"
+    assert errors[1].message == "value must be a bool"
 
 def test_integer_type():
     # test minimal specs
@@ -135,30 +139,30 @@ def test_integer_type():
     for invalid_value in [False, True, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
             validate_specs(specs | {'minimum': invalid_value})
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "'minimum' property is invalid (must be either a number of a dict)"
+        assert e_info.value.path == "root.minimum"
+        assert e_info.value.message == "value must be either a number or a dict"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'minimum': {'exclusive': False}})
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "'minimum' property is invalid ('value' property is missing)"
+    assert e_info.value.path == "root.minimum"
+    assert e_info.value.message == "'value' property is missing"
 
     for invalid_value in [42, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
             validate_specs(specs | {'minimum': {'exclusive': invalid_value, 'value': 42}})
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "'minimum' property is invalid (value of 'exclusive' must be a boolean)"
+        assert e_info.value.path == "root.minimum.exclusive"
+        assert e_info.value.message == "value must be a bool"
 
     for invalid_value in [False, True, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
             validate_specs(specs | {'minimum': {'exclusive': False, 'value': invalid_value}})
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "'minimum' property is invalid (value of 'value' must be a number)"
+        assert e_info.value.path == "root.minimum.value"
+        assert e_info.value.message == "value must be a number"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'minimum': {'value': 42, 'foo': 'bar'}})
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "'minimum' property is invalid ('foo' property was unexpected)"
+    assert e_info.value.path == "root.minimum"
+    assert e_info.value.message == "'foo' property is unexpected"
 
     # test 'maximum' property
     validate_specs(specs | {'maximum': 42})
@@ -169,40 +173,40 @@ def test_integer_type():
     for invalid_value in [False, True, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
             validate_specs(specs | {'maximum': invalid_value})
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "'maximum' property is invalid (must be either a number of a dict)"
+        assert e_info.value.path == "root.maximum"
+        assert e_info.value.message == "value must be either a number or a dict"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'maximum': {'exclusive': False}})
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "'maximum' property is invalid ('value' property is missing)"
+    assert e_info.value.path == "root.maximum"
+    assert e_info.value.message == "'value' property is missing"
 
     for invalid_value in [42, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
             validate_specs(specs | {'maximum': {'exclusive': invalid_value, 'value': 42}})
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "'maximum' property is invalid (value of 'exclusive' must be a boolean)"
+        assert e_info.value.path == "root.maximum.exclusive"
+        assert e_info.value.message == "value must be a bool"
 
     for invalid_value in [False, True, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
             validate_specs(specs | {'maximum': {'exclusive': False, 'value': invalid_value}})
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "'maximum' property is invalid (value of 'value' must be a number)"
+        assert e_info.value.path == "root.maximum.value"
+        assert e_info.value.message == "value must be a number"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'maximum': {'value': 42, 'foo': 'bar'}})
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "'maximum' property is invalid ('foo' property was unexpected)"
+    assert e_info.value.path == "root.maximum"
+    assert e_info.value.message == "'foo' property is unexpected"
 
-    # test maximum must be higher than minimum
+    # test minimum must be lower than maximum
     for minimum, maximum in ((42, 0), (-9, -10), (1, -1)):
         with pytest.raises(ValidationError) as e_info:
             validate_specs(specs | {'minimum': minimum, 'maximum': maximum})
         assert e_info.value.path == "root"
-        assert e_info.value.message == "maximum must be lower than minimum"
+        assert e_info.value.message == "minimum must be lower than maximum"
 
     # test the 'option' property
-    option_property_test(specs)
+    option_property_test(specs, "root")
 
     # test additional properties
     additional_properties_test(specs)
@@ -220,30 +224,30 @@ def test_integer_type():
     validate_specs(specs, errors=errors)
 
     assert errors[0].path == "root"
-    assert errors[0].message == "'foo' property was unexpected"
-    assert errors[1].path == "root"
-    assert errors[1].message == "'minimum' property is invalid (must be either a number of a dict)"
-    assert errors[2].path == "root"
-    assert errors[2].message == "'maximum' property is invalid (must be either a number of a dict)"
-    assert errors[3].path == "root"
-    assert errors[3].message == "value of 'option' must be a boolean"
+    assert errors[0].message == "'foo' property is unexpected"
+    assert errors[1].path == "root.minimum"
+    assert errors[1].message == "value must be either a number or a dict"
+    assert errors[2].path == "root.maximum"
+    assert errors[2].message == "value must be either a number or a dict"
+    assert errors[3].path == "root.option"
+    assert errors[3].message == "value must be a bool"
 
-def test_decimal_type():
-    # test minimal specs
-    specs = {'type': 'decimal'}
-    validate_specs(specs)
+# def test_decimal_type():
+#     # test minimal specs
+#     specs = {'type': 'decimal'}
+#     validate_specs(specs)
 
-    # test 'foo'
-    pass
+#     # test 'foo'
+#     pass
 
-    # test 'bar'
-    pass
+#     # test 'bar'
+#     pass
 
-    # test the 'option' property
-    option_property_test(specs)
+#     # test the 'option' property
+#     option_property_test(specs)
 
-    # test additional properties
-    additional_properties_test(specs)
+#     # test additional properties
+#     additional_properties_test(specs)
 
 def test_string_type():
     # test minimal specs
@@ -259,36 +263,36 @@ def test_string_type():
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'length': -1})
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "'length' property is invalid (length must be greater or equal to zero)"
+    assert e_info.value.path == "root.length"
+    assert e_info.value.message == "must be greater or equal to zero"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'length': {'minimum': -1}})
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "'length' property is invalid (value of 'length.minimum' must be greater or equal to zero)"
+    assert e_info.value.path == "root.length.minimum"
+    assert e_info.value.message == "must be greater or equal to zero"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'length': {'maximum': -1}})
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "'length' property is invalid (value of 'length.maximum' must be greater or equal to zero)"
+    assert e_info.value.path == "root.length.maximum"
+    assert e_info.value.message == "must be greater or equal to zero"
 
     for minimum, maximum in ((42, 0), (1, 0)):
         with pytest.raises(ValidationError) as e_info:
             validate_specs(specs | {'length': {'minimum': minimum, 'maximum': maximum}})
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "'length' property is invalid (length.maximum must be greater than length.minimum)"
+        assert e_info.value.path == "root.length"
+        assert e_info.value.message == "minimum must be lower than maximum"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'length': {'foo': 'bar'}})
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "'length' property is invalid ('foo' property was unexpected)"
+    assert e_info.value.path == "root.length"
+    assert e_info.value.message == "'foo' property is unexpected"
 
     # test the 'pattern' property
     validate_specs(specs | {'pattern': '^[a-z]+(-[a-z]+)*$'})
-    string_value_property_test(specs, 'pattern')
+    string_value_property_test(specs, 'pattern', 'root')
 
     # test the 'option' property
-    option_property_test(specs)
+    option_property_test(specs, 'root')
 
     # test additional properties
     additional_properties_test(specs)
@@ -306,30 +310,30 @@ def test_string_type():
     validate_specs(specs, errors=errors)
 
     assert errors[0].path == "root"
-    assert errors[0].message == "'foo' property was unexpected"
-    assert errors[1].path == "root"
-    assert errors[1].message == "'length' property is invalid (must be either a number of a dict)"
-    assert errors[2].path == "root"
-    assert errors[2].message == "value of 'pattern' must be a string"
-    assert errors[3].path == "root"
-    assert errors[3].message == "value of 'option' must be a boolean"
+    assert errors[0].message == "'foo' property is unexpected"
+    assert errors[1].path == "root.length"
+    assert errors[1].message == "value must be either a number or a dict"
+    assert errors[2].path == "root.pattern"
+    assert errors[2].message == "value must be a string"
+    assert errors[3].path == "root.option"
+    assert errors[3].message == "value must be a bool"
 
-def test_enum_type():
-    # test minimal specs
-    specs = {'type': 'enum'}
-    validate_specs(specs)
+# def test_enum_type():
+#     # test minimal specs
+#     specs = {'type': 'enum'}
+#     validate_specs(specs)
 
-    # test 'foo'
-    pass
+#     # test 'foo'
+#     pass
 
-    # test 'bar'
-    pass
+#     # test 'bar'
+#     pass
 
-    # test the 'option' property
-    option_property_test(specs)
+#     # test the 'option' property
+#     option_property_test(specs)
 
-    # test additional properties
-    additional_properties_test(specs)
+#     # test additional properties
+#     additional_properties_test(specs)
 
 def test_list_type():
     # test minimal specs
@@ -359,32 +363,32 @@ def test_list_type():
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'length': -1})
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "'length' property is invalid (length must be greater or equal to zero)"
+    assert e_info.value.path == "root.length"
+    assert e_info.value.message == "must be greater or equal to zero"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'length': {'minimum': -1}})
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "'length' property is invalid (value of 'length.minimum' must be greater or equal to zero)"
+    assert e_info.value.path == "root.length.minimum"
+    assert e_info.value.message == "must be greater or equal to zero"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'length': {'maximum': -1}})
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "'length' property is invalid (value of 'length.maximum' must be greater or equal to zero)"
+    assert e_info.value.path == "root.length.maximum"
+    assert e_info.value.message == "must be greater or equal to zero"
 
     for minimum, maximum in ((42, 0), (1, 0)):
         with pytest.raises(ValidationError) as e_info:
             validate_specs(specs | {'length': {'minimum': minimum, 'maximum': maximum}})
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "'length' property is invalid (length.maximum must be greater than length.minimum)"
+        assert e_info.value.path == "root.length"
+        assert e_info.value.message == "minimum must be lower than maximum"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'length': {'foo': 'bar'}})
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "'length' property is invalid ('foo' property was unexpected)"
+    assert e_info.value.path == "root.length"
+    assert e_info.value.message == "'foo' property is unexpected"
 
     # test the 'option' property
-    option_property_test(specs)
+    option_property_test(specs, 'root')
 
     # test additional properties
     additional_properties_test(specs)
@@ -418,13 +422,13 @@ def test_list_type():
     validate_specs(specs, errors=errors)
 
     assert errors[0].path == "root"
-    assert errors[0].message == "'foo' property was unexpected"
+    assert errors[0].message == "'foo' property is unexpected"
     assert errors[1].path == "root.[]"
     assert errors[1].message == "value must be a dict"
-    assert errors[2].path == "root"
-    assert errors[2].message == "'length' property is invalid (must be either a number of a dict)"
-    assert errors[3].path == "root"
-    assert errors[3].message == "value of 'option' must be a boolean"
+    assert errors[2].path == "root.length"
+    assert errors[2].message == "value must be either a number or a dict"
+    assert errors[3].path == "root.option"
+    assert errors[3].message == "value must be a bool"
 
 def test_tuple_type():
     # test minimal specs
@@ -448,12 +452,12 @@ def test_tuple_type():
     for values in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
             validate_specs({'type': 'tuple', 'values': values})
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "value of 'values' must be a list"
+        assert e_info.value.path == "root.values"
+        assert e_info.value.message == "value must be a list"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs({'type': 'tuple', 'values': []})
-    assert e_info.value.path == "root"
+    assert e_info.value.path == "root.values"
     assert e_info.value.message == "must contain at least one value"
 
     for value in [False, True, 42, "Hello world!"]:
@@ -468,7 +472,7 @@ def test_tuple_type():
     assert e_info.value.message == "value of 'type' is incorrect"
 
     # test the 'option' property
-    option_property_test(specs)
+    option_property_test(specs, 'root')
 
     # test additional properties
     additional_properties_test(specs)
@@ -511,15 +515,15 @@ def test_tuple_type():
     validate_specs(specs, errors=errors)
 
     assert errors[0].path == "root"
-    assert errors[0].message == "'foo' property was unexpected"
+    assert errors[0].message == "'foo' property is unexpected"
     assert errors[1].path == "root.(0)"
     assert errors[1].message == "value of 'type' is incorrect"
     assert errors[2].path == "root.(1)"
     assert errors[2].message == "value of 'type' is incorrect"
     assert errors[3].path == "root.(2)"
     assert errors[3].message == "value of 'type' is incorrect"
-    assert errors[4].path == "root"
-    assert errors[4].message == "value of 'option' must be a boolean"
+    assert errors[4].path == "root.option"
+    assert errors[4].message == "value must be a bool"
 
 def test_map_type():
     # test minimal specs
@@ -543,12 +547,12 @@ def test_map_type():
     for value in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
             validate_specs({'type': 'map', 'fields': value})
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "'fields' property must be a dict"
+        assert e_info.value.path == "root.fields"
+        assert e_info.value.message == "value must be a dict"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs({'type': 'map', 'fields': {}})
-    assert e_info.value.path == "root"
+    assert e_info.value.path == "root.fields"
     assert e_info.value.message == "must contain at least one field"
 
     for name in VALID_NAMES:
@@ -557,8 +561,8 @@ def test_map_type():
     for name in INVALID_NAMES:
         with pytest.raises(ValidationError) as e_info:
             validate_specs({'type': 'map', 'fields': {name: {'type': 'flag'}}})
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "'fields' has incorrect key name"
+        assert e_info.value.path == "root.fields"
+        assert e_info.value.message == f"'{name}' is an incorrect key name"
 
     for value in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
@@ -572,7 +576,7 @@ def test_map_type():
     assert e_info.value.message == "value of 'type' is incorrect"
 
     # test the 'option' property
-    option_property_test(specs)
+    option_property_test(specs, 'root')
 
     # test additional properties
     additional_properties_test(specs)
@@ -613,10 +617,10 @@ def test_map_type():
     validate_specs(specs, errors=errors)
 
     assert errors[0].path == "root"
-    assert errors[0].message == "'foo' property was unexpected"
-    assert errors[1].path == "root"
-    assert errors[1].message == "'fields' has incorrect key name"
+    assert errors[0].message == "'foo' property is unexpected"
+    assert errors[1].path == "root.fields"
+    assert errors[1].message == "'-foo' is an incorrect key name"
     assert errors[2].path == "root.bar"
     assert errors[2].message == "value of 'type' is incorrect"
-    assert errors[3].path == "root"
-    assert errors[3].message == "value of 'option' must be a boolean"
+    assert errors[3].path == "root.option"
+    assert errors[3].message == "value must be a bool"
