@@ -164,6 +164,12 @@ def test_integer_type():
     assert e_info.value.path == "root.minimum"
     assert e_info.value.message == "'foo' property is unexpected"
 
+    warnings = []
+    validate_specs(specs | {'minimum': {'value': 42.5}}, warnings=warnings)
+    assert len(warnings) == 1
+    assert warnings[0].path == "root.minimum"
+    assert warnings[0].message == "should be an integer (got float)"
+
     # test 'maximum' property
     validate_specs(specs | {'maximum': 42})
     validate_specs(specs | {'maximum': {'value': 42}})
@@ -197,6 +203,12 @@ def test_integer_type():
         validate_specs(specs | {'maximum': {'value': 42, 'foo': 'bar'}})
     assert e_info.value.path == "root.maximum"
     assert e_info.value.message == "'foo' property is unexpected"
+
+    warnings = []
+    validate_specs(specs | {'maximum': {'value': 42.5}}, warnings=warnings)
+    assert len(warnings) == 1
+    assert warnings[0].path == "root.maximum"
+    assert warnings[0].message == "should be an integer (got float)"
 
     # test minimum must be lower than maximum
     for minimum, maximum in ((42, 0), (-9, -10), (1, -1)):
@@ -356,15 +368,33 @@ def test_string_type():
     assert e_info.value.path == "root.length"
     assert e_info.value.message == "must be greater or equal to zero"
 
+    warnings = []
+    validate_specs(specs | {'length': 42.5}, warnings=warnings)
+    assert len(warnings) == 1
+    assert warnings[0].path == "root.length"
+    assert warnings[0].message == "should be an integer (got float)"
+
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'length': {'minimum': -1}})
     assert e_info.value.path == "root.length.minimum"
     assert e_info.value.message == "must be greater or equal to zero"
 
+    warnings = []
+    validate_specs(specs | {'length': {'minimum': 42.5}}, warnings=warnings)
+    assert len(warnings) == 1
+    assert warnings[0].path == "root.length"
+    assert warnings[0].message == "should be an integer (got float)"
+
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'length': {'maximum': -1}})
     assert e_info.value.path == "root.length.maximum"
     assert e_info.value.message == "must be greater or equal to zero"
+
+    warnings = []
+    validate_specs(specs | {'length': {'maximum': 42.5}}, warnings=warnings)
+    assert len(warnings) == 1
+    assert warnings[0].path == "root.length"
+    assert warnings[0].message == "should be an integer (got float)"
 
     for minimum, maximum in ((42, 0), (1, 0)):
         with pytest.raises(ValidationError) as e_info:
@@ -500,15 +530,33 @@ def test_list_type():
     assert e_info.value.path == "root.length"
     assert e_info.value.message == "must be greater or equal to zero"
 
+    warnings = []
+    validate_specs(specs | {'length': 42.5}, warnings=warnings)
+    assert len(warnings) == 1
+    assert warnings[0].path == "root.length"
+    assert warnings[0].message == "should be an integer (got float)"
+
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'length': {'minimum': -1}})
     assert e_info.value.path == "root.length.minimum"
     assert e_info.value.message == "must be greater or equal to zero"
 
+    warnings = []
+    validate_specs(specs | {'length': {'minimum': 42.5}}, warnings=warnings)
+    assert len(warnings) == 1
+    assert warnings[0].path == "root.length"
+    assert warnings[0].message == "should be an integer (got float)"
+
     with pytest.raises(ValidationError) as e_info:
         validate_specs(specs | {'length': {'maximum': -1}})
     assert e_info.value.path == "root.length.maximum"
     assert e_info.value.message == "must be greater or equal to zero"
+
+    warnings = []
+    validate_specs(specs | {'length': {'maximum': 42.5}}, warnings=warnings)
+    assert len(warnings) == 1
+    assert warnings[0].path == "root.length"
+    assert warnings[0].message == "should be an integer (got float)"
 
     for minimum, maximum in ((42, 0), (1, 0)):
         with pytest.raises(ValidationError) as e_info:

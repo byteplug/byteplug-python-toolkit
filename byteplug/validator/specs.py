@@ -7,9 +7,16 @@
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
 import re
-from byteplug.validator.exception import ValidationError
+from byteplug.validator.exception import ValidationError, ValidationWarning
 
 __all__ = ['validate_specs']
+
+# TODOs;
+# - Rework the entire implementation to be based on another generic validator
+#   module ?
+# - Parse directly YAML files in order to preserve lines and columns infos and
+#   emit more precise error/warning messages. Will also be faster.
+#
 
 def validate_minimum_or_maximum_property(name, path, value, errors):
     # This function also returns the actual minimal (or maximum) value so the
@@ -38,7 +45,6 @@ def validate_minimum_or_maximum_property(name, path, value, errors):
             error = ValidationError(path + f'.{name}', "'value' property is missing")
             errors.append(error)
         elif type(value_) not in (int, float):
-            # TODO; Could raise a warning if type is not integer.
             error = ValidationError(path + f'.{name}.value', "value must be a number")
             errors.append(error)
 
@@ -47,7 +53,7 @@ def validate_minimum_or_maximum_property(name, path, value, errors):
         error = ValidationError(path + f'.{name}', f"value must be either a number or a dict")
         errors.append(error)
 
-def validate_length_property(path, value, errors):
+def validate_length_property(path, value, errors, warnings):
 
     path = path + '.length'
 
@@ -55,6 +61,11 @@ def validate_length_property(path, value, errors):
         if value < 0:
             error = ValidationError(path, "must be greater or equal to zero")
             errors.append(error)
+
+        if type(value) is float:
+            warning = ValidationWarning(path, "should be an integer (got float)")
+            warnings.append(warning)
+
     elif type(value) is dict:
         # Only 'minimum' and 'maximum' properties are accepted.
         extra_properties = set(value.keys()) - {'minimum', 'maximum'}
@@ -68,6 +79,11 @@ def validate_length_property(path, value, errors):
             if type(minimum) not in (int, float):
                 error = ValidationError(path + '.minimum', "value must be a number")
                 errors.append(error)
+
+            if type(minimum) is float:
+                warning = ValidationWarning(path, "should be an integer (got float)")
+                warnings.append(warning)
+
             if minimum < 0:
                 error = ValidationError(path + '.minimum', "must be greater or equal to zero")
                 errors.append(error)
@@ -77,6 +93,11 @@ def validate_length_property(path, value, errors):
             if type(maximum) not in (int, float):
                 error = ValidationError(path + '.maximum', "value must be a number")
                 errors.append(error)
+
+            if type(maximum) is float:
+                warning = ValidationWarning(path, "should be an integer (got float)")
+                warnings.append(warning)
+
             if maximum < 0:
                 error = ValidationError(path + '.maximum', "must be greater or equal to zero")
                 errors.append(error)
@@ -98,9 +119,19 @@ def validate_integer_type(path, block, errors, warnings):
     if 'minimum' in block:
         minimum = validate_minimum_or_maximum_property('minimum', path, block['minimum'], errors)
 
+        # TODO; The path is not accurate, it should either be .minimum.value or .minimum
+        if minimum is not None and type(minimum[1]) is float:
+            warning = ValidationWarning(path + '.minimum', "should be an integer (got float)")
+            warnings.append(warning)
+
     maximum = None
     if 'maximum' in block:
         maximum = validate_minimum_or_maximum_property('maximum', path, block['maximum'], errors)
+
+        # TODO; The path is not accurate, it should either be .maximum.value or .maximum
+        if maximum is not None and type(maximum[1]) is float:
+            warning = ValidationWarning(path + '.maximum', "should be an integer (got float)")
+            warnings.append(warning)
 
     if minimum and maximum:
         if maximum[1] < minimum[1]:
@@ -123,7 +154,7 @@ def validate_decimal_type(path, block, errors, warnings):
 
 def validate_string_type(path, block, errors, warnings):
     if 'length' in block:
-        validate_length_property(path, block['length'], errors)
+        validate_length_property(path, block['length'], errors, warnings)
 
     # TODO; Check validity of the regex.
     pattern = block.get('pattern')
@@ -174,7 +205,7 @@ def validate_list_type(path, block, errors, warnings):
     validate_block(path + '.[]', value, errors, warnings)
 
     if 'length' in block:
-        validate_length_property(path, block['length'], errors)
+        validate_length_property(path, block['length'], errors, warnings)
 
 def validate_tuple_type(path, block, errors, warnings):
     values = block.get('values')
@@ -292,7 +323,12 @@ def validate_specs(specs, errors=None, warnings=None):
     - must contain at least one field
     - '<foo>' is an incorrect key name
 
-    No warnings are defined yet (will never generate warnings).
+    Possible warning messages.
+
+    - should be an integer (got float)
+
+    When validating the length property and when validating the minimum and
+    maximum property for integers.
     """
 
     assert errors is None or errors == [], "if the errors parameter is set, it must be an empty list"
