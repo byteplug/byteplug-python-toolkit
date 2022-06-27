@@ -9,7 +9,7 @@
 import re
 import json
 from byteplug.validator.utils import read_minimum_value, read_maximum_value
-from byteplug.validator.exception import ValidationError
+from byteplug.validator.exception import ValidationError, ValidationWarning
 
 # Notes:
 # - This module handles validation and conversion from JSON document to Python
@@ -32,13 +32,16 @@ def process_flag_node(path, node, specs, errors, warnings):
     return node
 
 def process_integer_node(path, node, specs, errors, warnings):
-
-    # must be an number, converted to int or float
-    # assert type(node) in (int, float)
     if type(node) not in (int, float):
         error = ValidationError(path, "was expecting a JSON number")
         errors.append(error)
         return
+
+    if type(node) is float:
+        warning = ValidationWarning(path, "may lose precision")
+        warnings.append(warning)
+
+        node = int(node)
 
     node_errors = []
 
@@ -75,8 +78,7 @@ def process_integer_node(path, node, specs, errors, warnings):
         errors.extend(node_errors)
         return
 
-    # TODO; warning if losing precision
-    return int(node)
+    return node
 
 def process_decimal_node(path, node, specs, errors, warnings):
     pass

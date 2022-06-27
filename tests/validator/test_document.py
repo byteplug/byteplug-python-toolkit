@@ -122,6 +122,16 @@ def test_integer_type():
     assert e_info.value.path == "root"
     assert e_info.value.message == "value must be strictly less than X"
 
+    # check if warning is raised when it's a decimal value
+    warnings = []
+    object = document_to_object("42.5", {'type': 'integer'}, warnings=warnings)
+    assert type(object) is int
+    assert object == 42
+
+    assert len(warnings) == 1
+    assert warnings[0].path == "root"
+    assert warnings[0].message == "may lose precision"
+
     # test lazy validation
     specs = {
         'type': 'integer',
