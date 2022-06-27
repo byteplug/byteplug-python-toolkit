@@ -47,6 +47,8 @@ def process_integer_node(path, node, specs, errors, warnings):
 
     if minimum:
         is_exclusive, value = minimum
+        value = int(value)
+
         if is_exclusive:
             if not (node > value):
                 error = ValidationError(path, "value must be strictly greater than X")
@@ -58,6 +60,8 @@ def process_integer_node(path, node, specs, errors, warnings):
 
     if maximum:
         is_exclusive, value = maximum
+        value = int(value)
+
         if is_exclusive:
             if not (node < value):
                 error = ValidationError(path, "value must be strictly less than X")
@@ -88,7 +92,12 @@ def process_string_node(path, node, specs, errors, warnings):
 
     length = specs.get('length')
     if length is not None:
-        if type(length) is int:
+        if type(length) in (int, float):
+
+            # Decimal values are accepted in the specs (they raise warnings
+            # tho), we normalize them.
+            length = int(length)
+
             if len(node) != length:
                 error = ValidationError(path, "length of string must be equal to X")
                 node_errors.append(error)
@@ -96,12 +105,16 @@ def process_string_node(path, node, specs, errors, warnings):
             minimum = length.get("minimum")
             maximum = length.get("maximum")
 
-            if minimum:
+            if minimum is not None:
+                minimum = int(minimum)
+
                 if not (len(node) >= minimum):
                     error = ValidationError(path, "length of string must be greater or equal to X")
                     node_errors.append(error)
 
-            if maximum:
+            if maximum is not None:
+                maximum = int(maximum)
+
                 if not (len(node) <= maximum):
                     error = ValidationError(path, "length of string must be lower or equal to X")
                     node_errors.append(error)
@@ -142,7 +155,9 @@ def process_list_node(path, node, specs, errors, warnings):
 
     length = specs.get('length')
     if length is not None:
-        if type(length) is int:
+        if type(length) in (int, float):
+            length = int(length)
+
             if len(node) != length:
                 error = ValidationError(path, "length of list must be equal to X")
                 errors.append(error)
@@ -151,13 +166,17 @@ def process_list_node(path, node, specs, errors, warnings):
             minimum = length.get("minimum")
             maximum = length.get("maximum")
 
-            if minimum:
+            if minimum is not None:
+                minimum = int(minimum)
+
                 if not (len(node) >= minimum):
                     error = ValidationError(path, "length of list must be greater or equal to X")
                     errors.append(error)
                     return
 
-            if maximum:
+            if maximum is not None:
+                maximum = int(maximum)
+
                 if not (len(node) <= maximum):
                     error = ValidationError(path, "length of list must be lower or equal to X")
                     errors.append(error)
