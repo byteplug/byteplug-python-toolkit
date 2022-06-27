@@ -412,7 +412,17 @@ def test_map_type():
         "quz": "Hello world!"
     }
 
-    # TODO; More things to test here.
+    # test if unexpected fields are reported
+    with pytest.raises(ValidationError) as e_info:
+        document_to_object('{"foo": true, "bar": 42, "quz": "Hello world!", "yolo": false}', specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "'yolo' field was unexpected"
+
+    # test if missing fields are reported
+    with pytest.raises(ValidationError) as e_info:
+        document_to_object('{"foo": true, "bar": 42}', specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "'quz' field was missing"
 
     # test lazy validation
     errors = []

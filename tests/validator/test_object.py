@@ -389,7 +389,39 @@ def test_map_type():
     document = object_to_document(value, specs)
     assert document == '{"foo": true, "bar": 42, "quz": "Hello world!"}'
 
-    # TODO; More things to test here.
+    # test if non-string keys are reported
+    value = {
+        "foo": True,
+        "bar": 42,
+        "quz": "Hello world!",
+        42: False
+    }
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(value, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "keys of the dict must be string exclusively"
+
+    # test if unexpected fields are reported
+    value = {
+        "foo": True,
+        "bar": 42,
+        "quz": "Hello world!",
+        "yolo": False
+    }
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(value, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "'yolo' field was unexpected"
+
+    # test if missing fields are reported
+    value = {
+        "foo": True,
+        "bar": 42
+    }
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(value, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "'quz' field was missing"
 
     # test lazy validation
     errors = []

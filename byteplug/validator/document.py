@@ -222,11 +222,24 @@ def process_map_node(path, node, specs, errors, warnings):
         errors.append(error)
         return
 
-    # TODO; More things to do here.
+    node_errors = []
+
     adjusted_node = {}
-    for key, value in fields.items():
-        if key in node:
-            adjusted_node[key] = adjust_node(path + f'.{key}', node[key], value, errors, warnings)
+    for key, value in node.items():
+        if key in fields.keys():
+            adjusted_node[key] = adjust_node(path + f'.{key}', value, fields[key], errors, warnings)
+        else:
+            error = ValidationError(path, f"'{key}' field was unexpected")
+            errors.append(error)
+
+    missing_keys = set(fields.keys()) - set(adjusted_node.keys())
+    for key in missing_keys:
+        error = ValidationError(path, f"'{key}' field was missing")
+        errors.append(error)
+
+    if len(node_errors) > 0:
+        errors.extend(node_errors)
+        return
 
     return adjusted_node
 
