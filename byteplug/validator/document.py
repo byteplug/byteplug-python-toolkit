@@ -54,11 +54,11 @@ def process_integer_node(path, node, specs, errors, warnings):
 
         if is_exclusive:
             if not (node > value):
-                error = ValidationError(path, "value must be strictly greater than X")
+                error = ValidationError(path, f"value must be strictly greater than {value}")
                 node_errors.append(error)
         else:
             if not (node >= value):
-                error = ValidationError(path, "value must be equal or greater than X")
+                error = ValidationError(path, f"value must be equal or greater than {value}")
                 node_errors.append(error)
 
     if maximum:
@@ -67,11 +67,11 @@ def process_integer_node(path, node, specs, errors, warnings):
 
         if is_exclusive:
             if not (node < value):
-                error = ValidationError(path, "value must be strictly less than X")
+                error = ValidationError(path, f"value must be strictly lower than {value}")
                 node_errors.append(error)
         else:
             if not (node <= value):
-                error = ValidationError(path, "value must be equal or less than X")
+                error = ValidationError(path, f"value must be equal or lower than {value}")
                 node_errors.append(error)
 
     if len(node_errors) > 0:
@@ -101,7 +101,7 @@ def process_string_node(path, node, specs, errors, warnings):
             length = int(length)
 
             if len(node) != length:
-                error = ValidationError(path, "length of string must be equal to X")
+                error = ValidationError(path, f"length must be equal to {length}")
                 node_errors.append(error)
         else:
             minimum = length.get("minimum")
@@ -111,20 +111,20 @@ def process_string_node(path, node, specs, errors, warnings):
                 minimum = int(minimum)
 
                 if not (len(node) >= minimum):
-                    error = ValidationError(path, "length of string must be greater or equal to X")
+                    error = ValidationError(path, f"length must be equal or greater than {minimum}")
                     node_errors.append(error)
 
             if maximum is not None:
                 maximum = int(maximum)
 
                 if not (len(node) <= maximum):
-                    error = ValidationError(path, "length of string must be lower or equal to X")
+                    error = ValidationError(path, f"length must be equal or lower than {maximum}")
                     node_errors.append(error)
 
     pattern = specs.get('pattern')
     if pattern is not None:
         if not re.match(pattern, node):
-            error = ValidationError(path, "didnt match pattern")
+            error = ValidationError(path, "value did not match the pattern")
             node_errors.append(error)
 
     if len(node_errors) > 0:
@@ -141,7 +141,7 @@ def process_enum_node(path, node, specs, errors, warnings):
 
     values = specs['values']
     if node not in values:
-        error = ValidationError(path, "value was expected to be one of [foo, bar, quz]")
+        error = ValidationError(path, "enum value is invalid")
         errors.append(error)
         return
 
@@ -161,7 +161,7 @@ def process_list_node(path, node, specs, errors, warnings):
             length = int(length)
 
             if len(node) != length:
-                error = ValidationError(path, "length of list must be equal to X")
+                error = ValidationError(path, f"length must be equal to {length}")
                 errors.append(error)
                 return
         else:
@@ -172,7 +172,7 @@ def process_list_node(path, node, specs, errors, warnings):
                 minimum = int(minimum)
 
                 if not (len(node) >= minimum):
-                    error = ValidationError(path, "length of list must be greater or equal to X")
+                    error = ValidationError(path, f"length must be equal or greater than {minimum}")
                     errors.append(error)
                     return
 
@@ -180,7 +180,7 @@ def process_list_node(path, node, specs, errors, warnings):
                 maximum = int(maximum)
 
                 if not (len(node) <= maximum):
-                    error = ValidationError(path, "length of list must be lower or equal to X")
+                    error = ValidationError(path, f"length must be equal or lower than {maximum}")
                     errors.append(error)
                     return
 
@@ -200,7 +200,7 @@ def process_tuple_node(path, node, specs, errors, warnings):
         return
 
     if len(node) != len(values):
-        error = ValidationError(path, "was expecting array of N elements")
+        error = ValidationError(path, f"length of the array must be {len(values)}")
         errors.append(error)
         return
 

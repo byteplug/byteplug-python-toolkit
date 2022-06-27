@@ -51,7 +51,7 @@ def test_integer_type():
     with pytest.raises(ValidationError) as e_info:
         object_to_document(41, specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "value must be equal or greater than X"
+    assert e_info.value.message == "value must be equal or greater than 42"
 
     specs = {
         'type': 'integer',
@@ -64,7 +64,7 @@ def test_integer_type():
     with pytest.raises(ValidationError) as e_info:
         object_to_document(41, specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "value must be equal or greater than X"
+    assert e_info.value.message == "value must be equal or greater than 42"
 
     specs = {
         'type': 'integer',
@@ -77,7 +77,7 @@ def test_integer_type():
     with pytest.raises(ValidationError) as e_info:
         object_to_document(42, specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "value must be strictly greater than X"
+    assert e_info.value.message == "value must be strictly greater than 42"
 
     # test if value is being checked against maximum value
     specs = {
@@ -89,7 +89,7 @@ def test_integer_type():
     with pytest.raises(ValidationError) as e_info:
         object_to_document(43, specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "value must be equal or less than X"
+    assert e_info.value.message == "value must be equal or lower than 42"
 
     specs = {
         'type': 'integer',
@@ -102,7 +102,7 @@ def test_integer_type():
     with pytest.raises(ValidationError) as e_info:
         object_to_document(43, specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "value must be equal or less than X"
+    assert e_info.value.message == "value must be equal or lower than 42"
 
     specs = {
         'type': 'integer',
@@ -115,7 +115,7 @@ def test_integer_type():
     with pytest.raises(ValidationError) as e_info:
         object_to_document(42, specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "value must be strictly less than X"
+    assert e_info.value.message == "value must be strictly lower than 42"
 
     # test lazy validation
     specs = {
@@ -127,9 +127,9 @@ def test_integer_type():
     errors = []
     object_to_document(42, specs, errors=errors)
     assert errors[0].path == "root"
-    assert errors[0].message == "value must be equal or greater than X"
+    assert errors[0].message == "value must be equal or greater than 43"
     assert errors[1].path == "root"
-    assert errors[1].message == "value must be equal or less than X"
+    assert errors[1].message == "value must be equal or lower than 41"
 
 def test_decimal_type():
     pass
@@ -159,13 +159,13 @@ def test_string_type():
         value = 41* 'a'
         object_to_document(value, specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "length of string must be equal to X"
+    assert e_info.value.message == "length must be equal to 42"
 
     with pytest.raises(ValidationError) as e_info:
         value = 43 * 'a'
         object_to_document(value, specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "length of string must be equal to X"
+    assert e_info.value.message == "length must be equal to 42"
 
     specs = {
         'type': 'string',
@@ -181,7 +181,7 @@ def test_string_type():
         value = 41* 'a'
         object_to_document(value, specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "length of string must be greater or equal to X"
+    assert e_info.value.message == "length must be equal or greater than 42"
 
     specs = {
         'type': 'string',
@@ -197,7 +197,7 @@ def test_string_type():
         value = 43* 'a'
         object_to_document(value, specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "length of string must be lower or equal to X"
+    assert e_info.value.message == "length must be equal or lower than 42"
 
     # test if value is being checked against the pattern
     specs = {
@@ -212,7 +212,7 @@ def test_string_type():
         with pytest.raises(ValidationError) as e_info:
             object_to_document(invalid_value, specs)
         assert e_info.value.path == "root"
-        assert e_info.value.message == "didnt match pattern"
+        assert e_info.value.message == "value did not match the pattern"
 
     # test lazy validation
     specs = {
@@ -224,9 +224,9 @@ def test_string_type():
     errors = []
     object_to_document(43* 'a', specs, errors=errors)
     assert errors[0].path == "root"
-    assert errors[0].message == "length of string must be equal to X"
+    assert errors[0].message == "length must be equal to 42"
     assert errors[1].path == "root"
-    assert errors[1].message == "didnt match pattern"
+    assert errors[1].message == "value did not match the pattern"
 
 def test_enum_type():
     specs = {
@@ -248,7 +248,7 @@ def test_enum_type():
     with pytest.raises(ValidationError) as e_info:
         object_to_document("Hello world!", specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "value was expected to be one of [foo, bar, quz]"
+    assert e_info.value.message == "enum value is invalid"
 
 def test_list_type():
     specs = {'type': 'list', 'value': {'type': 'string'}}
@@ -283,12 +283,12 @@ def test_list_type():
     with pytest.raises(ValidationError) as e_info:
         object_to_document(["foo"], specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "length of list must be equal to X"
+    assert e_info.value.message == "length must be equal to 2"
 
     with pytest.raises(ValidationError) as e_info:
         object_to_document(["foo", "bar", "quz"], specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "length of list must be equal to X"
+    assert e_info.value.message == "length must be equal to 2"
 
     specs = {
         'type': 'list',
@@ -302,7 +302,7 @@ def test_list_type():
     with pytest.raises(ValidationError) as e_info:
         object_to_document(["foo"], specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "length of list must be greater or equal to X"
+    assert e_info.value.message == "length must be equal or greater than 2"
 
     specs = {
         'type': 'list',
@@ -316,7 +316,7 @@ def test_list_type():
     with pytest.raises(ValidationError) as e_info:
         object_to_document(["foo", "bar", "quz"], specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "length of list must be lower or equal to X"
+    assert e_info.value.message == "length must be equal or lower than 2"
 
     # test lazy validation
     specs = {
@@ -353,7 +353,7 @@ def test_tuple_type():
     with pytest.raises(ValidationError) as e_info:
         object_to_document((False, True, 42, "foo"), specs)
     assert e_info.value.path == "root"
-    assert e_info.value.message == "was expecting tuple of N elements"
+    assert e_info.value.message == "length of the tuple must be 3"
 
     # test lazy validation
     errors = []
