@@ -132,7 +132,106 @@ def test_integer_type():
     assert errors[1].message == "value must be equal or lower than 41"
 
 def test_decimal_type():
-    pass
+    specs = {'type': 'decimal'}
+
+    for value in [False, True, 42, "Hello world!", [], (), {}]:
+        with pytest.raises(ValidationError) as e_info:
+            object_to_document(value, specs)
+        assert e_info.value.path == "root"
+        assert e_info.value.message == "was expecting a float"
+
+    document = object_to_document(42.5, specs)
+    assert document == "42.5"
+
+    # test if value is being checked against minimum value
+    specs = {
+        'type': 'decimal',
+        'minimum': 42.5
+    }
+
+    object_to_document(42.5, specs)
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(42.4, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "value must be equal or greater than 42.5"
+
+    specs = {
+        'type': 'decimal',
+        'minimum': {
+            'exclusive': False,
+            'value': 42.5
+        }
+    }
+    object_to_document(42.5, specs)
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(42.4, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "value must be equal or greater than 42.5"
+
+    specs = {
+        'type': 'decimal',
+        'minimum': {
+            'exclusive': True,
+            'value': 42.5
+        }
+    }
+    object_to_document(42.6, specs)
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(42.5, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "value must be strictly greater than 42.5"
+
+    # test if value is being checked against maximum value
+    specs = {
+        'type': 'decimal',
+        'maximum': 42.5
+    }
+
+    object_to_document(42.5, specs)
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(42.6, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "value must be equal or lower than 42.5"
+
+    specs = {
+        'type': 'decimal',
+        'maximum': {
+            'exclusive': False,
+            'value': 42.5
+        }
+    }
+    object_to_document(42.5, specs)
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(42.6, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "value must be equal or lower than 42.5"
+
+    specs = {
+        'type': 'decimal',
+        'maximum': {
+            'exclusive': True,
+            'value': 42.5
+        }
+    }
+    object_to_document(42.4, specs)
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(42.5, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "value must be strictly lower than 42.5"
+
+    # test lazy validation
+    specs = {
+        'type': 'decimal',
+        'minimum': 42.75,
+        'maximum': 42.25
+    }
+
+    errors = []
+    object_to_document(42.5, specs, errors=errors)
+    assert errors[0].path == "root"
+    assert errors[0].message == "value must be equal or greater than 42.75"
+    assert errors[1].path == "root"
+    assert errors[1].message == "value must be equal or lower than 42.25"
 
 def test_string_type():
     specs = {'type': 'string'}

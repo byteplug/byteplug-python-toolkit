@@ -81,7 +81,46 @@ def process_integer_node(path, node, specs, errors, warnings):
     return node
 
 def process_decimal_node(path, node, specs, errors, warnings):
-    pass
+    if type(node) not in (int, float):
+        error = ValidationError(path, "was expecting a JSON number")
+        errors.append(error)
+        return
+
+    if type(node) is int:
+        node = float(node)
+
+    node_errors = []
+
+    minimum = read_minimum_value(specs)
+    maximum = read_maximum_value(specs)
+
+    if minimum:
+        is_exclusive, value = minimum
+        if is_exclusive:
+            if not (node > value):
+                error = ValidationError(path, f"value must be strictly greater than {value}")
+                node_errors.append(error)
+        else:
+            if not (node >= value):
+                error = ValidationError(path, f"value must be equal or greater than {value}")
+                node_errors.append(error)
+
+    if maximum:
+        is_exclusive, value = maximum
+        if is_exclusive:
+            if not (node < value):
+                error = ValidationError(path, f"value must be strictly lower than {value}")
+                node_errors.append(error)
+        else:
+            if not (node <= value):
+                error = ValidationError(path, f"value must be equal or lower than {value}")
+                node_errors.append(error)
+
+    if len(node_errors) > 0:
+        errors.extend(node_errors)
+        return
+
+    return node
 
 def process_string_node(path, node, specs, errors, warnings):
 
