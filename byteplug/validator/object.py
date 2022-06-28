@@ -210,10 +210,10 @@ def process_list_node(path, node, specs, errors, warnings):
                     errors.append(error)
                     return
 
-    # TODO; Rework this.
     adjusted_node = []
     for (index, item) in enumerate(node):
-        adjusted_node.append(adjust_node(path + '.[' + str(index) + ']', item, value, errors, warnings))
+        adjusted_item = adjust_node(path + '.[' + str(index) + ']', item, value, errors, warnings)
+        adjusted_node.append(adjusted_item)
 
     return adjusted_node
 
@@ -230,12 +230,10 @@ def process_tuple_node(path, node, specs, errors, warnings):
         errors.append(error)
         return
 
-    # TODO; Rework this.
     adjusted_node = []
     for (index, item) in enumerate(node):
-        adjusted_node.append(
-            adjust_node(path + '.(' + str(index) + ')', item, values[index], errors, warnings)
-        )
+        adjusted_item = adjust_node(path + '.(' + str(index) + ')', item, values[index], errors, warnings)
+        adjusted_node.append(adjusted_item)
 
     return adjusted_node
 
