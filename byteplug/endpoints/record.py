@@ -6,5 +6,14 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-def request():
-    pass
+from byteplug.validator.types import Type
+
+class Record(Type):
+    records_map = {}
+
+    def __init__(self, name):
+        Type.__init__(self, option=False)
+        self.name = name
+
+    def to_object(self):
+        return self.name

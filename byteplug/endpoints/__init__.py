@@ -6,6 +6,10 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.http_api.request import request
-from byteplug.http_api.response import response
-from byteplug.http_api.endpoint import root, collection
+from byteplug.endpoints.record import Record
+from byteplug.endpoints.endpoint import endpoint, collection_endpoint, Operate
+from byteplug.endpoints.endpoint import request, response, error
+from byteplug.endpoints.endpoint import adaptor
+from byteplug.endpoints.endpoints import Endpoints
+from byteplug.endpoints.exception import EndpointError
+from byteplug.endpoints.specs import validate_specs
