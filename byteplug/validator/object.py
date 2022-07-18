@@ -294,7 +294,7 @@ def adjust_node(path, node, specs, errors, warnings):
     else:
         return adjust_node_map[specs['type']](path, node, specs, errors, warnings)
 
-def object_to_document(object, specs, errors=None, warnings=None):
+def object_to_document(object, specs, errors=None, warnings=None, no_dump=False):
     """ Convert Python object to its JSON equivalent. """
 
     # Assume specs is valid (Python object form)
@@ -321,4 +321,7 @@ def object_to_document(object, specs, errors=None, warnings=None):
     if not lazy_validation and len(errors) > 0:
         raise errors[0]
 
-    return dumped_document
+    if no_dump:
+        return document
+    else:
+        return dumped_document
