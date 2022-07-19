@@ -244,25 +244,26 @@ def test_response():
     endpoints.add_endpoint(bar_with_invalid_response)
     endpoints.add_endpoint(bar_with_no_response)
 
-    server = start_server(endpoints, 8084)
+    server = start_server(endpoints, 8094)
 
-    url = build_url('/foo-with-response', 8084)
+    # Port 8084 seems unavailable on some Github runners.
+    url = build_url('/foo-with-response', 8094)
     response = requests.post(url)
     assert response.status_code == 204
     assert response.text == ''
 
-    url = build_url('/foo-with-no-response', 8084)
+    url = build_url('/foo-with-no-response', 8094)
     response = requests.post(url)
     assert response.status_code == 204
     assert response.text == ''
 
-    url = build_url('/bar-with-response', 8084)
+    url = build_url('/bar-with-response', 8094)
     response = requests.post(url)
     assert response.status_code == 200
     assert response.json() == "Hello world!"
 
     # test triggering the 'invalid-response-specs-mismatch' server-side error
-    url = build_url('/bar-with-invalid-response', 8084)
+    url = build_url('/bar-with-invalid-response', 8094)
     response = requests.post(url)
     assert response.status_code == 500
     assert response.json() == {
@@ -275,7 +276,7 @@ def test_response():
     }
 
     # TODO; FIX THIS
-    # url = build_url('/bar-with-no-response', 8084)
+    # url = build_url('/bar-with-no-response', 8094)
     # response = requests.post(url)
     # assert response.status_code == 500
     # assert response.json() == {
@@ -287,7 +288,7 @@ def test_response():
     #     'warnings': []
     # }
 
-    stop_server(server, 8084)
+    stop_server(server, 8094)
 
 def test_errors():
     """ Test error-related functionalities.
