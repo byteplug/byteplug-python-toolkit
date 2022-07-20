@@ -278,12 +278,19 @@ class Endpoints:
 
             self.flask.add_url_rule(path, name, function, methods=('POST',))
 
-    def add_expose_specs_endpoint(self):
-        specs = self.generate_specs(to_string=None)
+    def add_expose_specs_endpoint(self, path='/specs', no_yaml=False):
+        specs_obj = self.generate_specs(to_string=None)
 
-        self.flask.route('/specs', methods=['GET'])
-        def specs():
-            return specs, 200, {'Content-Type': 'application/json'}
+        # TODO; Quick and dirty implementation, beautify this.
+        if no_yaml:
+            @self.flask.route(path, methods=['GET'])
+            def json_specs():
+                return specs_obj, 200, {'Content-Type': 'application/json'}
+        else:
+            specs_yaml_string = yaml.safe_dump(specs_obj, sort_keys=False)
+            @self.flask.route(path, methods=['GET'])
+            def yaml_specs():
+                return specs_yaml_string, 200, {'Content-Type': 'text/vnd.yaml'}
 
     def add_shutdown_endpoint(self):
         # Code taken from Stackoverflow (turns out it's not necessary by the

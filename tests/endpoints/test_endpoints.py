@@ -555,15 +555,32 @@ def test_specs_endpoint():
     To be written.
     """
 
-    from byteplug.endpoints.endpoint import response
+    # TODO; This test should be more developed and more accurate (more
+    #       endpoints, and carefully check every part of the JSON/YAML
+    #       response).
+    #
 
-    # things here.
+    @endpoint("foo")
+    def foo():
+        pass
 
     endpoints = Endpoints("test")
-    # thing here too.
+    endpoints.add_endpoint(foo)
+    endpoints.add_expose_specs_endpoint('/my-yaml-specs')
+    endpoints.add_expose_specs_endpoint('/my-json-specs', no_yaml=True)
 
     server = start_server(endpoints, 8088)
 
-    # and things there.
+    url = build_url('/my-yaml-specs', 8088)
+    response = requests.get(url)
+    assert response.status_code == 200
+    assert response.text.startswith("standard: https://www.byteplug.io/standards/easy-endpoints/1.0")
+
+    url = build_url('/my-json-specs', 8088)
+    response = requests.get(url)
+    assert response.status_code == 200
+    json_response = response.json()
+    assert 'standard' in json_response
+    assert json_response['standard'] == "https://www.byteplug.io/standards/easy-endpoints/1.0"
 
     stop_server(server, 8088)
