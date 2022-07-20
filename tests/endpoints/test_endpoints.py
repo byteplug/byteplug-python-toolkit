@@ -305,9 +305,7 @@ def test_errors():
     from byteplug.endpoints.endpoint import response
 
     @request(Enum(values=[
-        'foo',
-        'bar',
-        'quz',
+        'foo', 'bar', 'quz', 'yolo',
         'specs-mismatch',
         'invalid-error',
         'unhandled-error'
@@ -315,6 +313,7 @@ def test_errors():
     @error("foo", Flag().to_object(),    "Foo", "Description of 'Foo' error.")
     @error("bar", Integer().to_object(), name="Bar")
     @error("quz", String().to_object(),  description="Description of 'Quz' error.")
+    @error("yolo") # This is an error with no specs
     @endpoint("foobar")
     def foobar(document):
         if document == 'foo':
@@ -323,10 +322,12 @@ def test_errors():
             raise EndpointError('bar', 42)
         elif document == 'quz':
             raise EndpointError('quz', "Hello world!")
+        elif document == 'yolo':
+            raise EndpointError('yolo', None)
         elif document == 'specs-mismatch':
             raise EndpointError('quz', 42)
         elif document == 'invalid-error':
-            raise EndpointError('yolo')
+            raise EndpointError('oloy')
         elif document == 'unhandled-error':
             raise RuntimeError
 
@@ -364,6 +365,14 @@ def test_errors():
         'code': 'quz',
         'description': "Description of 'Quz' error.",
         'value': "Hello world!"
+    }
+
+    url = build_url('/foobar', 8085)
+    response = requests.post(url, json='"yolo"')
+    assert response.status_code == 500
+    assert response.json() == {
+        'type': 'error',
+        'code': 'yolo'
     }
 
     url = build_url('/foobar', 8085)

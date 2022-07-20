@@ -30,9 +30,10 @@ def response(specs):
 
     return decorator
 
-def error(tag, specs, name=None, description=None):
+def error(tag, specs=None, name=None, description=None):
     assert re.match(r"^[a-z]+(-[a-z]+)*$", tag), "invalid tag name"
-    validate_specs(specs)
+    if specs:
+        validate_specs(specs)
 
     def decorator(function):
         assert "specs" in dir(function), "the @error decorator must be followed by an endpoint decorator"

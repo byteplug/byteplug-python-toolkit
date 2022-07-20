@@ -56,7 +56,9 @@ def make_endpoint_block(endpoint):
         if value['description']:
             error_block['description'] = value['description']
 
-        error_block['value'] = value['specs']
+
+        if value['specs']:
+            error_block['value'] = value['specs']
 
         errors_block[key] = error_block
 
@@ -210,11 +212,20 @@ class Endpoints:
                     if e.tag in errors:
                         error = errors[e.tag]
 
-                        errors, warnings = [], []
-                        document = object_to_document(e.value, error['specs'], errors=errors, warnings=warnings, no_dump=True)
+                        document = None
+                        if error['specs']:
+                            # Technically, we could check for the exception to
+                            # have None for value when the error does not have
+                            # a specs, but the object_to_document() will take
+                            # care of it.
 
-                        if len(errors) > 0:
-                            return invalid_error_specs_mismatch(errors, warnings)
+                            # assert e.value != None, "error didn't expect a value"
+
+                            errors, warnings = [], []
+                            document = object_to_document(e.value, error['specs'], errors=errors, warnings=warnings, no_dump=True)
+
+                            if len(errors) > 0:
+                                return invalid_error_specs_mismatch(errors, warnings)
 
                         return valid_error(e.tag, document, error['name'], error['description'])
                     else:

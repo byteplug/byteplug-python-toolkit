@@ -109,9 +109,11 @@ def unhandled_error():
 def valid_error(tag, value, name=None, description=None):
     json = {
         'type': 'error',
-        'code': tag,
-        'value': value
+        'code': tag
     }
+
+    if value is not None:
+        json['value'] = value
 
     if name:
         json['name'] = name
