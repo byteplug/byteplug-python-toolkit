@@ -150,7 +150,7 @@ def test_request():
     response = requests.post(url, json={'foo': 'bar'})
     assert response.status_code == 400
     assert response.json() == {
-        'type': 'client-side-error',
+        'kind': 'client-side-error',
         'code': 'no-json-body-expected',
         'name': "No JSON body was expected",
         'description': "This endpoint did not expect a body in the HTTP request."
@@ -167,7 +167,7 @@ def test_request():
     response = requests.post(url)
     assert response.status_code == 400
     assert response.json() == {
-        'type': 'client-side-error',
+        'kind': 'client-side-error',
         'code': 'json-body-expected',
         'name': "A JSON body was expected",
         'description': "This endpoint expected a JSON body in the HTTP request."
@@ -178,7 +178,7 @@ def test_request():
     response = requests.post(url, data="Hello world!")
     assert response.status_code == 400
     assert response.json() == {
-        'type': 'client-side-error',
+        'kind': 'client-side-error',
         'code': 'body-not-json-format',
         'name': "The body is not JSON format",
         'description': "The format of the body in the HTTP request must be JSON."
@@ -189,7 +189,7 @@ def test_request():
     response = requests.post(url, json="42")
     assert response.status_code == 400
     assert response.json() == {
-        'type': 'client-side-error',
+        'kind': 'client-side-error',
         'code': 'json-body-specs-mismatch',
         'name': "The JSON body does not match the specs",
         'description': "The JSON body in the HTTP request does not match the specifications.",
@@ -267,7 +267,7 @@ def test_response():
     response = requests.post(url)
     assert response.status_code == 500
     assert response.json() == {
-        'type': 'server-side-error',
+        'kind': 'server-side-error',
         'code': 'invalid-response-specs-mismatch',
         'name': "Invalid returned response JSON body",
         'description': "The endpoint did not return a response JSON body matching its specifications.",
@@ -280,7 +280,7 @@ def test_response():
     # response = requests.post(url)
     # assert response.status_code == 500
     # assert response.json() == {
-    #     'type': 'server-side-error',
+    #     'kind': 'server-side-error',
     #     'code': 'invalid-response-specs-mismatch',
     #     'name': "Invalid returned response JSON body",
     #     'description': "The endpoint did not return a response JSON body matching its specifications.",
@@ -340,7 +340,7 @@ def test_errors():
     response = requests.post(url, json='"foo"')
     assert response.status_code == 500
     assert response.json() == {
-        'type': 'error',
+        'kind': 'error',
         'code': 'foo',
         'name': "Foo",
         'description': "Description of 'Foo' error.",
@@ -351,7 +351,7 @@ def test_errors():
     response = requests.post(url, json='"bar"')
     assert response.status_code == 500
     assert response.json() == {
-        'type': 'error',
+        'kind': 'error',
         'code': 'bar',
         'name': "Bar",
         'value': 42
@@ -361,7 +361,7 @@ def test_errors():
     response = requests.post(url, json='"quz"')
     assert response.status_code == 500
     assert response.json() == {
-        'type': 'error',
+        'kind': 'error',
         'code': 'quz',
         'description': "Description of 'Quz' error.",
         'value': "Hello world!"
@@ -371,7 +371,7 @@ def test_errors():
     response = requests.post(url, json='"yolo"')
     assert response.status_code == 500
     assert response.json() == {
-        'type': 'error',
+        'kind': 'error',
         'code': 'yolo'
     }
 
@@ -379,7 +379,7 @@ def test_errors():
     response = requests.post(url, json='"specs-mismatch"')
     assert response.status_code == 500
     assert response.json() == {
-        'type': 'server-side-error',
+        'kind': 'server-side-error',
         'code': 'invalid-error-specs-mismatch',
         'name': "Invalid returned error JSON body",
         'description': "The endpoint did not return an error JSON body matching its specifications.",
@@ -391,7 +391,7 @@ def test_errors():
     response = requests.post(url, json='"invalid-error"')
     assert response.status_code == 500
     assert response.json() == {
-        'type': 'server-side-error',
+        'kind': 'server-side-error',
         'code': 'invalid-error',
         'name': "Invalid returned error",
         'description': "The endpoint returned an unexpected error (not listed in its specifications)."
@@ -401,7 +401,7 @@ def test_errors():
     response = requests.post(url, json='"unhandled-error"')
     assert response.status_code == 500
     assert response.json() == {
-        'type': 'server-side-error',
+        'kind': 'server-side-error',
         'code': 'unhandled-error',
         'name': "Unhandled error",
         'description': "An unexpected and unhandled error occurred during the execution of the endpoint."

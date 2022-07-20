@@ -22,7 +22,7 @@ def json_response(json, code):
 
 def json_body_expected():
     json = {
-        'type': 'client-side-error',
+        'kind': 'client-side-error',
         'code': 'json-body-expected',
         'name': "A JSON body was expected",
         'description': "This endpoint expected a JSON body in the HTTP request."
@@ -32,7 +32,7 @@ def json_body_expected():
 
 def body_not_json_format():
     json = {
-        'type': 'client-side-error',
+        'kind': 'client-side-error',
         'code': 'body-not-json-format',
         'name': "The body is not JSON format",
         'description': "The format of the body in the HTTP request must be JSON."
@@ -42,7 +42,7 @@ def body_not_json_format():
 
 def json_body_specs_mismatch(errors, warnings):
     json = {
-        'type': 'client-side-error',
+        'kind': 'client-side-error',
         'code': 'json-body-specs-mismatch',
         'name': "The JSON body does not match the specs",
         'description': "The JSON body in the HTTP request does not match the specifications.",
@@ -54,7 +54,7 @@ def json_body_specs_mismatch(errors, warnings):
 
 def no_json_body_expected():
     json = {
-        'type': 'client-side-error',
+        'kind': 'client-side-error',
         'code': 'no-json-body-expected',
         'name': "No JSON body was expected",
         'description': "This endpoint did not expect a body in the HTTP request."
@@ -64,7 +64,7 @@ def no_json_body_expected():
 
 def invalid_response_specs_mismatch(errors, warnings):
     json = {
-        'type': 'server-side-error',
+        'kind': 'server-side-error',
         'code': 'invalid-response-specs-mismatch',
         'name': "Invalid returned response JSON body",
         'description': "The endpoint did not return a response JSON body matching its specifications.",
@@ -76,7 +76,7 @@ def invalid_response_specs_mismatch(errors, warnings):
 
 def invalid_error():
     json = {
-        'type': 'server-side-error',
+        'kind': 'server-side-error',
         'code': 'invalid-error',
         'name': "Invalid returned error",
         'description': "The endpoint returned an unexpected error (not listed in its specifications)."
@@ -86,7 +86,7 @@ def invalid_error():
 
 def invalid_error_specs_mismatch(errors, warnings):
     json = {
-        'type': 'server-side-error',
+        'kind': 'server-side-error',
         'code': 'invalid-error-specs-mismatch',
         'name': "Invalid returned error JSON body",
         'description': "The endpoint did not return an error JSON body matching its specifications.",
@@ -98,7 +98,7 @@ def invalid_error_specs_mismatch(errors, warnings):
 
 def unhandled_error():
     json = {
-        'type': 'server-side-error',
+        'kind': 'server-side-error',
         'code': 'unhandled-error',
         'name': "Unhandled error",
         'description': "An unexpected and unhandled error occurred during the execution of the endpoint."
@@ -108,7 +108,7 @@ def unhandled_error():
 
 def valid_error(tag, value, name=None, description=None):
     json = {
-        'type': 'error',
+        'kind': 'error',
         'code': tag
     }
 
