@@ -8,8 +8,8 @@
 
 import re
 import json
-from byteplug.validator.utils import read_minimum_value, read_maximum_value
-from byteplug.validator.exception import ValidationError, ValidationWarning
+from byteplug.document.utils import read_minimum_value, read_maximum_value
+from byteplug.document.exception import ValidationError, ValidationWarning
 
 # Notes:
 # - This module handles validation and conversion from JSON document to Python

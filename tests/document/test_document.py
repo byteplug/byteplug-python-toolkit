@@ -6,9 +6,8 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from pydoc import doc
-from byteplug.validator import document_to_object
-from byteplug.validator import ValidationError
+from byteplug.document import document_to_object
+from byteplug.document import ValidationError
 import pytest
 
 # Notes:

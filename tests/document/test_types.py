@@ -6,7 +6,7 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.validator.types import *
+from byteplug.document.types import *
 import yaml
 
 def test_flag_type():

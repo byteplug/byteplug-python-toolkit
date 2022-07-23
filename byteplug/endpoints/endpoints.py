@@ -10,10 +10,10 @@ import re
 import yaml
 from flask import Flask, request
 from flask_cors import CORS
-from byteplug.validator.object import object_to_document
-from byteplug.validator.specs import validate_specs
-from byteplug.validator.document import document_to_object
-from byteplug.validator.exception import ValidationError, ValidationWarning
+from byteplug.document.object import object_to_document
+from byteplug.document.specs import validate_specs
+from byteplug.document.document import document_to_object
+from byteplug.document.exception import ValidationError, ValidationWarning
 from byteplug.endpoints.record import Record
 from byteplug.endpoints.endpoint import Operate
 from byteplug.endpoints.exception import EndpointError

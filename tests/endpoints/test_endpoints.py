@@ -18,7 +18,7 @@
 import time
 from multiprocessing import Process
 import requests
-from byteplug.validator.types import *
+from byteplug.document.types import *
 from byteplug.endpoints.endpoint import request, error
 from byteplug.endpoints.endpoint import adaptor
 from byteplug.endpoints.endpoint import endpoint, collection_endpoint

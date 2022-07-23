@@ -8,7 +8,7 @@
 
 import re
 from enum import Enum
-from byteplug.validator.specs import validate_specs
+from byteplug.document.specs import validate_specs
 
 Operate = Enum('Operate', 'ITEM COLLECTION')
 

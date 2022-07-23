@@ -6,8 +6,8 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.validator.types import *
-from byteplug.validator.exception import ValidationError
+from byteplug.document.types import *
+from byteplug.document.exception import ValidationError
 from byteplug.endpoints.endpoint import endpoint, collection_endpoint, Operate
 from byteplug.endpoints.endpoint import request, response, error
 import pytest

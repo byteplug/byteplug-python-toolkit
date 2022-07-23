@@ -6,8 +6,8 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.validator.types import *
-from byteplug.validator.specs import validate_specs
-from byteplug.validator.document import document_to_object
-from byteplug.validator.object import object_to_document
-from byteplug.validator.exception import ValidationError, ValidationWarning
+from byteplug.document.types import *
+from byteplug.document.specs import validate_specs
+from byteplug.document.document import document_to_object
+from byteplug.document.object import object_to_document
+from byteplug.document.exception import ValidationError, ValidationWarning

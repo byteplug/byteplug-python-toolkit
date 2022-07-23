@@ -6,8 +6,8 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.validator import validate_specs
-from byteplug.validator import ValidationError
+from byteplug.document import validate_specs
+from byteplug.document import ValidationError
 import pytest
 
 VALID_NAMES = [

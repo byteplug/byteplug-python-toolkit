@@ -6,8 +6,8 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.validator import object_to_document
-from byteplug.validator import ValidationError
+from byteplug.document import object_to_document
+from byteplug.document import ValidationError
 import pytest
 
 # Notes:

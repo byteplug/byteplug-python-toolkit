@@ -6,7 +6,7 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.validator.types import Type
+from byteplug.document.types import Type
 
 class Record(Type):
     records_map = {}

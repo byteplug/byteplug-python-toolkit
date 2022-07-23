@@ -6,7 +6,7 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.validator.exception import ValidationError, ValidationWarning
+from byteplug.document.exception import ValidationError, ValidationWarning
 
 __all__ = ['validate_specs']
 

@@ -6,7 +6,7 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.validator.types import *
+from byteplug.document.types import *
 from byteplug.endpoints.endpoint import request, response, error
 from byteplug.endpoints.endpoint import endpoint, collection_endpoint
 from byteplug.endpoints.endpoints import Endpoints
