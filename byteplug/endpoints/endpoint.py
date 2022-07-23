@@ -64,9 +64,25 @@ def adaptor(f):
 
 def make_endpoint_decorator(collection, operate, path, authentication, name, description):
     def decorator(function):
+
+        # TODO; Rewrite the folowing.
+        the_name = name
+        the_description = description
+
+        if name is None and description is None:
+            if '__doc__' in dir(function) and function.__doc__ is not None:
+                var = function.__doc__.split("\n")
+                if len(var) > 0:
+                    the_name = var[0]
+                    the_name = the_name.lstrip(' ').lstrip('\n')
+                    the_name = the_name.rstrip(' ').rstrip('\n')
+                if len(var) > 1:
+                    var2 = [var3.lstrip('\n').lstrip(' ').rstrip('\n').rstrip(' ') for var3 in var[1:]]
+                    the_description = ' '.join(var2)
+
         function.specs = {
-            'name': name,
-            'description': description,
+            'name': the_name,
+            'description': the_description,
             'collection': collection,
             'operate': operate,
             'path': path,
