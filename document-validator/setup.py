@@ -12,5 +12,6 @@ setup(
         'License :: OSI Approved :: Open Software License 3.0 (OSL-3.0)'
     ],
     packages=['byteplug', 'byteplug.document'],
-    namespace_packages = ['byteplug']
+    namespace_packages = ['byteplug'],
+    python_requires='>=3.9'
 )
