@@ -1,4 +1,4 @@
-name: Toolkit
+name: Document Validator
 
 on:
   push:
@@ -23,13 +23,16 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+        cd document-validator/
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Build the package
       run: |
+        cd document-validator/
         python setup.py build
     - name: Run the unit tests
       run: |
-        pip install pytest requests flask_cors
+        cd document-validator/
+        pip install pytest
         pip install .
         pytest
