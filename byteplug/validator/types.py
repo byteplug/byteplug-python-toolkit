@@ -115,7 +115,7 @@ class Enum(Type):
 
     def to_object(self):
         object = {'type': 'enum'}
-        object['values'] = self.values
+        object['values'] = list(self.values)
 
         Type.update_object(self, object)
         return object
