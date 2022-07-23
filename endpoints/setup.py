@@ -13,5 +13,6 @@ setup(
     ],
     packages=['byteplug', 'byteplug.endpoints'],
     namespace_packages = ['byteplug'],
-    python_requires='>=3.9'
+    python_requires='>=3.9',
+    install_requires=['pyyaml', 'flask', 'byteplug-document']
 )
