@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='byteplug-document',
-    version='0.1',
+    version='0.1.1.dev1',
     description="Byteplug toolkit that implements the Document Validator standard.",
     url='https://www.byteplug.io/standards/document-validator',
     author='Jonathan De Wachter',
