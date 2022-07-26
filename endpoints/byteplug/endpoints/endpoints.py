@@ -162,14 +162,14 @@ class Endpoints:
                 if item_id is not None:
                     input_kwargs['item'] = item_id
 
-
                 has_body = request.content_length > 0
                 is_body_json = None
                 if has_body:
                     is_body_json = request.is_json
                 json_body = None
                 if is_body_json:
-                    json_body = request.json
+                    # Note that the raw data may not be valid JSON.
+                    json_body = request.get_data(as_text=True)
 
                 document = None
                 if endpoint.specs['request']:

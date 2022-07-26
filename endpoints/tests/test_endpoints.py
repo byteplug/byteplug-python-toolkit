@@ -17,6 +17,7 @@
 
 import time
 from multiprocessing import Process
+import json
 import requests
 from byteplug.document.types import *
 from byteplug.endpoints.endpoint import request, error
@@ -25,6 +26,13 @@ from byteplug.endpoints.endpoint import endpoint, collection_endpoint
 from byteplug.endpoints.endpoints import Endpoints
 from byteplug.endpoints.exception import EndpointError
 import pytest
+
+def requests_post_json(url, document, headers={}):
+    return requests.post(
+        url,
+        data=json.dumps(document),
+        headers=headers | {'Content-Type': 'application/json'}
+    )
 
 def build_url(route, port=8080):
     return "http://127.0.0.1:{0}{1}".format(port, route)
@@ -74,7 +82,7 @@ def test_endpoints():
     server = start_server(endpoints, 8081)
 
     url = build_url('/foobar', 8081)
-    response = requests.post(url, json='"foo"')
+    response = requests_post_json(url, "foo")
     assert response.status_code == 200
     assert response.json() == "bar"
 
@@ -186,7 +194,7 @@ def test_request():
 
     # test triggering the 'json-body-specs-mismatch' client-side error
     url = build_url('/bar', 8083)
-    response = requests.post(url, json="42")
+    response = requests_post_json(url, 42)
     assert response.status_code == 400
     assert response.json() == {
         'kind': 'client-side-error',
@@ -199,7 +207,8 @@ def test_request():
 
     # test calling the 'bar' endpoint correctly
     url = build_url('/bar', 8083)
-    response = requests.post(url, json='"Hello world!"')
+    document ="Hello world!"
+    response = requests_post_json(url, document)
     assert response.status_code == 204
     assert response.text == ''
 
@@ -337,7 +346,7 @@ def test_errors():
     server = start_server(endpoints, 8085)
 
     url = build_url('/foobar', 8085)
-    response = requests.post(url, json='"foo"')
+    response = requests_post_json(url, "foo")
     assert response.status_code == 500
     assert response.json() == {
         'kind': 'error',
@@ -348,7 +357,7 @@ def test_errors():
     }
 
     url = build_url('/foobar', 8085)
-    response = requests.post(url, json='"bar"')
+    response = requests_post_json(url, "bar")
     assert response.status_code == 500
     assert response.json() == {
         'kind': 'error',
@@ -358,7 +367,7 @@ def test_errors():
     }
 
     url = build_url('/foobar', 8085)
-    response = requests.post(url, json='"quz"')
+    response = requests_post_json(url, "quz")
     assert response.status_code == 500
     assert response.json() == {
         'kind': 'error',
@@ -368,7 +377,7 @@ def test_errors():
     }
 
     url = build_url('/foobar', 8085)
-    response = requests.post(url, json='"yolo"')
+    response = requests_post_json(url, "yolo")
     assert response.status_code == 500
     assert response.json() == {
         'kind': 'error',
@@ -376,7 +385,7 @@ def test_errors():
     }
 
     url = build_url('/foobar', 8085)
-    response = requests.post(url, json='"specs-mismatch"')
+    response = requests_post_json(url, "specs-mismatch")
     assert response.status_code == 500
     assert response.json() == {
         'kind': 'server-side-error',
@@ -388,7 +397,7 @@ def test_errors():
     }
 
     url = build_url('/foobar', 8085)
-    response = requests.post(url, json='"invalid-error"')
+    response = requests_post_json(url, "invalid-error")
     assert response.status_code == 500
     assert response.json() == {
         'kind': 'server-side-error',
@@ -398,7 +407,7 @@ def test_errors():
     }
 
     url = build_url('/foobar', 8085)
-    response = requests.post(url, json='"unhandled-error"')
+    response = requests_post_json(url, "unhandled-error")
     assert response.status_code == 500
     assert response.json() == {
         'kind': 'server-side-error',
@@ -484,7 +493,11 @@ def test_adaptor_decorator():
         'quz': String()
     }).to_object()
 
-    document_value = '{"foo": false, "bar": 42, "quz": "Hello world!"}'
+    document = {
+        "foo": False,
+        "bar": 42,
+        "quz": "Hello world!"
+    }
 
     @request(request_specs)
     @response(String().to_object())
@@ -531,18 +544,18 @@ def test_adaptor_decorator():
     server = start_server(endpoints, 8087)
 
     url = build_url('/foo', 8087)
-    response = requests.post(url, json=document_value)
+    response = requests_post_json(url, document)
     assert response.status_code == 200
     assert response.json() == "foo"
 
     url = build_url('/quz/42/foo', 8087)
-    response = requests.post(url, json=document_value)
+    response = requests_post_json(url, document)
     assert response.status_code == 200
     assert response.json() == "quz/foo"
 
     url = build_url('/quz/42/bar', 8087)
     headers = {"Authorization": "Bearer abcd1234"}
-    response = requests.post(url, json=document_value, headers=headers)
+    response = requests_post_json(url, document, headers)
     assert response.status_code == 200
     assert response.json() == "quz/bar"
 
