@@ -239,7 +239,7 @@ class Endpoints:
                     if len(errors) > 0:
                         return invalid_response_specs_mismatch(errors, warnings)
 
-                    return document
+                    return document, 200, {'Content-Type': 'application/json'}
                 else:
                     return ('', 204)
 
