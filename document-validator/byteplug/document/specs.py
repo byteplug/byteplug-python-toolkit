@@ -204,7 +204,7 @@ def validate_map_type(path, block, errors, warnings):
             errors.append(error)
             continue
 
-        validate_block(path + [key], value, errors, warnings)
+        validate_block(path + ['{' + key + '}'], value, errors, warnings)
 
 def validate_decimal_type(path, block, errors, warnings):
     minimum = None

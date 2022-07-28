@@ -581,12 +581,12 @@ def test_map_type():
     for value in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
             validate_specs({'type': 'map', 'fields': {'foo': value}})
-        assert e_info.value.path == ["foo"]
+        assert e_info.value.path == ["{foo}"]
         assert e_info.value.message == "value must be a dict"
 
     with pytest.raises(ValidationError) as e_info:
         validate_specs({'type': 'map', 'fields': {'foo': {'type': 'bar'}}})
-    assert e_info.value.path == ["foo"]
+    assert e_info.value.path == ["{foo}"]
     assert e_info.value.message == "value of 'type' is incorrect"
 
     # test the 'option' property
@@ -634,7 +634,7 @@ def test_map_type():
     assert errors[0].message == "'foo' property is unexpected"
     assert errors[1].path == ["fields"]
     assert errors[1].message == "'-foo' is an incorrect key name"
-    assert errors[2].path == ["bar"]
+    assert errors[2].path == ["{bar}"]
     assert errors[2].message == "value of 'type' is incorrect"
     assert errors[3].path == ["option"]
     assert errors[3].message == "value must be a bool"

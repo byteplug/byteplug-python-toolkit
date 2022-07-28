@@ -400,11 +400,11 @@ def test_map_type():
     # test lazy validation
     errors = []
     document_to_object('{"foo": "Hello world!", "bar": true, "quz": 42}', specs, errors=errors)
-    assert errors[0].path == ["foo"]
+    assert errors[0].path == ["{foo}"]
     assert errors[0].message == "was expecting a JSON boolean"
-    assert errors[1].path == ["bar"]
+    assert errors[1].path == ["{bar}"]
     assert errors[1].message == "was expecting a JSON number"
-    assert errors[2].path == ["quz"]
+    assert errors[2].path == ["{quz}"]
     assert errors[2].message == "was expecting a JSON string"
 
 
