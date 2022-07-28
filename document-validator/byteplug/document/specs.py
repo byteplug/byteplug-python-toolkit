@@ -280,9 +280,15 @@ def validate_block(path, block, errors, warnings):
         errors.append(error)
         return
 
+    # Note that we turn the set into a list and sort it in order to get a
+    # deterministic behavior (without it, the order in which extra properties
+    # are reported would vary).
     extra_properties = set(block.keys()) - set(validators[type_][1]) - {'type', 'option'}
-    if extra_properties:
-        error = ValidationError(path, f"'{extra_properties.pop()}' property is unexpected")
+    extra_properties = list(extra_properties)
+    extra_properties.sort()
+
+    for property in extra_properties:
+        error = ValidationError(path, f"'{property}' property is unexpected")
         errors.append(error)
 
     validators[type_][0](path, block, errors, warnings)

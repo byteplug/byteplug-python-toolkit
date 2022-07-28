@@ -77,10 +77,13 @@ def option_property_test(specs, path):
     bool_value_property_test(specs, "option", path)
 
 def additional_properties_test(specs):
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'foo': 'bar'})
-    assert e.value.path == []
-    assert e.value.message == "'foo' property is unexpected"
+    errors = []
+    validate_specs(specs | {'foo': 'bar', 'bar': 'foo'}, errors=errors)
+
+    assert errors[0].path == []
+    assert errors[0].message == "'bar' property is unexpected"
+    assert errors[1].path == []
+    assert errors[1].message == "'foo' property is unexpected"
 
 def test_type_block():
     # type blocks must be a dict
