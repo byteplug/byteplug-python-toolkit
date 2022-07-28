@@ -20,7 +20,7 @@ def test_flag_type():
     for value in [42, 42.0, "Hello world!", [], (), {}]:
         with pytest.raises(ValidationError) as e_info:
             object_to_document(value, specs)
-        assert e_info.value.path == "root"
+        assert e_info.value.path == []
         assert e_info.value.message == "was expecting a boolean"
 
     document = object_to_document(False, specs)
@@ -35,7 +35,7 @@ def test_integer_type():
     for value in [False, True, 42.0, "Hello world!", [], (), {}]:
         with pytest.raises(ValidationError) as e_info:
             object_to_document(value, specs)
-        assert e_info.value.path == "root"
+        assert e_info.value.path == []
         assert e_info.value.message == "was expecting an integer"
 
     document = object_to_document(42, specs)
@@ -50,7 +50,7 @@ def test_integer_type():
     object_to_document(42, specs)
     with pytest.raises(ValidationError) as e_info:
         object_to_document(41, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "value must be equal or greater than 42"
 
     specs = {
@@ -63,7 +63,7 @@ def test_integer_type():
     object_to_document(42, specs)
     with pytest.raises(ValidationError) as e_info:
         object_to_document(41, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "value must be equal or greater than 42"
 
     specs = {
@@ -76,7 +76,7 @@ def test_integer_type():
     object_to_document(43, specs)
     with pytest.raises(ValidationError) as e_info:
         object_to_document(42, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "value must be strictly greater than 42"
 
     # test if value is being checked against maximum value
@@ -88,7 +88,7 @@ def test_integer_type():
     object_to_document(42, specs)
     with pytest.raises(ValidationError) as e_info:
         object_to_document(43, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "value must be equal or lower than 42"
 
     specs = {
@@ -101,7 +101,7 @@ def test_integer_type():
     object_to_document(42, specs)
     with pytest.raises(ValidationError) as e_info:
         object_to_document(43, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "value must be equal or lower than 42"
 
     specs = {
@@ -114,7 +114,7 @@ def test_integer_type():
     object_to_document(41, specs)
     with pytest.raises(ValidationError) as e_info:
         object_to_document(42, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "value must be strictly lower than 42"
 
     # test lazy validation
@@ -126,9 +126,9 @@ def test_integer_type():
 
     errors = []
     object_to_document(42, specs, errors=errors)
-    assert errors[0].path == "root"
+    assert errors[0].path == []
     assert errors[0].message == "value must be equal or greater than 43"
-    assert errors[1].path == "root"
+    assert errors[1].path == []
     assert errors[1].message == "value must be equal or lower than 41"
 
 def test_string_type():
@@ -137,7 +137,7 @@ def test_string_type():
     for value in [False, True, 42, 42.0, [], (), {}]:
         with pytest.raises(ValidationError) as e_info:
             object_to_document(value, specs)
-        assert e_info.value.path == "root"
+        assert e_info.value.path == []
         assert e_info.value.message == "was expecting a string"
 
     document = object_to_document("Hello world!", specs)
@@ -155,13 +155,13 @@ def test_string_type():
     with pytest.raises(ValidationError) as e_info:
         value = 41* 'a'
         object_to_document(value, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "length must be equal to 42"
 
     with pytest.raises(ValidationError) as e_info:
         value = 43 * 'a'
         object_to_document(value, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "length must be equal to 42"
 
     specs = {
@@ -177,7 +177,7 @@ def test_string_type():
     with pytest.raises(ValidationError) as e_info:
         value = 41* 'a'
         object_to_document(value, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "length must be equal or greater than 42"
 
     specs = {
@@ -193,7 +193,7 @@ def test_string_type():
     with pytest.raises(ValidationError) as e_info:
         value = 43* 'a'
         object_to_document(value, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "length must be equal or lower than 42"
 
     # test if value is being checked against the pattern
@@ -208,7 +208,7 @@ def test_string_type():
     for invalid_value in ["Foobar", "foo_bar", "-foobar", "barfoo-", "foo--bar"]:
         with pytest.raises(ValidationError) as e_info:
             object_to_document(invalid_value, specs)
-        assert e_info.value.path == "root"
+        assert e_info.value.path == []
         assert e_info.value.message == "value did not match the pattern"
 
     # test lazy validation
@@ -220,9 +220,9 @@ def test_string_type():
 
     errors = []
     object_to_document(43* 'a', specs, errors=errors)
-    assert errors[0].path == "root"
+    assert errors[0].path == []
     assert errors[0].message == "length must be equal to 42"
-    assert errors[1].path == "root"
+    assert errors[1].path == []
     assert errors[1].message == "value did not match the pattern"
 
 def test_list_type():
@@ -231,7 +231,7 @@ def test_list_type():
     for value in [False, True, 42, 42.0, "Hello world!", (), {}]:
         with pytest.raises(ValidationError) as e_info:
             object_to_document(value, specs)
-        assert e_info.value.path == "root"
+        assert e_info.value.path == []
         assert e_info.value.message == "was expecting a list"
 
     specs = {'type': 'list', 'value': {'type': 'flag'}}
@@ -257,12 +257,12 @@ def test_list_type():
 
     with pytest.raises(ValidationError) as e_info:
         object_to_document(["foo"], specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "length must be equal to 2"
 
     with pytest.raises(ValidationError) as e_info:
         object_to_document(["foo", "bar", "quz"], specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "length must be equal to 2"
 
     specs = {
@@ -276,7 +276,7 @@ def test_list_type():
 
     with pytest.raises(ValidationError) as e_info:
         object_to_document(["foo"], specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "length must be equal or greater than 2"
 
     specs = {
@@ -290,7 +290,7 @@ def test_list_type():
 
     with pytest.raises(ValidationError) as e_info:
         object_to_document(["foo", "bar", "quz"], specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "length must be equal or lower than 2"
 
     # test lazy validation
@@ -302,9 +302,9 @@ def test_list_type():
     errors = []
     object_to_document([True, 42, "Hello world!"], specs, errors=errors)
 
-    assert errors[0].path == "root.[0]"
+    assert errors[0].path == ["[0]"]
     assert errors[0].message == "was expecting an integer"
-    assert errors[1].path == "root.[2]"
+    assert errors[1].path == ["[2]"]
     assert errors[1].message == "was expecting an integer"
 
 def test_tuple_type():
@@ -319,7 +319,7 @@ def test_tuple_type():
     for value in [False, True, 42, 42.0, "Hello world!", [], {}]:
         with pytest.raises(ValidationError) as e_info:
             object_to_document(value, specs)
-        assert e_info.value.path == "root"
+        assert e_info.value.path == []
         assert e_info.value.message == "was expecting a tuple"
 
     document = object_to_document((True, 42, "foo"), specs)
@@ -327,17 +327,17 @@ def test_tuple_type():
 
     with pytest.raises(ValidationError) as e_info:
         object_to_document((False, True, 42, "foo"), specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "length of the tuple must be 3"
 
     # test lazy validation
     errors = []
     object_to_document(("foo", True, 42), specs, errors=errors)
-    assert errors[0].path == "root.(0)"
+    assert errors[0].path == ["(0)"]
     assert errors[0].message == "was expecting a boolean"
-    assert errors[1].path == "root.(1)"
+    assert errors[1].path == ["(1)"]
     assert errors[1].message == "was expecting an integer"
-    assert errors[2].path == "root.(2)"
+    assert errors[2].path == ["(2)"]
     assert errors[2].message == "was expecting a string"
 
 def test_map_type():
@@ -353,7 +353,7 @@ def test_map_type():
     for value in [False, True, 42, 42.0, "Hello world!", [], ()]:
         with pytest.raises(ValidationError) as e_info:
             object_to_document(value, specs)
-        assert e_info.value.path == "root"
+        assert e_info.value.path == []
         assert e_info.value.message == "was expecting a dict"
 
     value = {
@@ -373,7 +373,7 @@ def test_map_type():
     }
     with pytest.raises(ValidationError) as e_info:
         object_to_document(value, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "keys of the dict must be string exclusively"
 
     # test if unexpected fields are reported
@@ -385,7 +385,7 @@ def test_map_type():
     }
     with pytest.raises(ValidationError) as e_info:
         object_to_document(value, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "'yolo' field was unexpected"
 
     # test if missing fields are reported
@@ -395,7 +395,7 @@ def test_map_type():
     }
     with pytest.raises(ValidationError) as e_info:
         object_to_document(value, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "'quz' field was missing"
 
     # test lazy validation
@@ -407,11 +407,11 @@ def test_map_type():
         "quz": 42
     }
     object_to_document(value, specs, errors=errors)
-    assert errors[0].path == "root.foo"
+    assert errors[0].path == ["foo"]
     assert errors[0].message == "was expecting a boolean"
-    assert errors[1].path == "root.bar"
+    assert errors[1].path == ["bar"]
     assert errors[1].message == "was expecting an integer"
-    assert errors[2].path == "root.quz"
+    assert errors[2].path == ["quz"]
     assert errors[2].message == "was expecting a string"
 
 def test_decimal_type():
@@ -420,7 +420,7 @@ def test_decimal_type():
     for value in [False, True, 42, "Hello world!", [], (), {}]:
         with pytest.raises(ValidationError) as e_info:
             object_to_document(value, specs)
-        assert e_info.value.path == "root"
+        assert e_info.value.path == []
         assert e_info.value.message == "was expecting a float"
 
     document = object_to_document(42.5, specs)
@@ -435,7 +435,7 @@ def test_decimal_type():
     object_to_document(42.5, specs)
     with pytest.raises(ValidationError) as e_info:
         object_to_document(42.4, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "value must be equal or greater than 42.5"
 
     specs = {
@@ -448,7 +448,7 @@ def test_decimal_type():
     object_to_document(42.5, specs)
     with pytest.raises(ValidationError) as e_info:
         object_to_document(42.4, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "value must be equal or greater than 42.5"
 
     specs = {
@@ -461,7 +461,7 @@ def test_decimal_type():
     object_to_document(42.6, specs)
     with pytest.raises(ValidationError) as e_info:
         object_to_document(42.5, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "value must be strictly greater than 42.5"
 
     # test if value is being checked against maximum value
@@ -473,7 +473,7 @@ def test_decimal_type():
     object_to_document(42.5, specs)
     with pytest.raises(ValidationError) as e_info:
         object_to_document(42.6, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "value must be equal or lower than 42.5"
 
     specs = {
@@ -486,7 +486,7 @@ def test_decimal_type():
     object_to_document(42.5, specs)
     with pytest.raises(ValidationError) as e_info:
         object_to_document(42.6, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "value must be equal or lower than 42.5"
 
     specs = {
@@ -499,7 +499,7 @@ def test_decimal_type():
     object_to_document(42.4, specs)
     with pytest.raises(ValidationError) as e_info:
         object_to_document(42.5, specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "value must be strictly lower than 42.5"
 
     # test lazy validation
@@ -511,9 +511,9 @@ def test_decimal_type():
 
     errors = []
     object_to_document(42.5, specs, errors=errors)
-    assert errors[0].path == "root"
+    assert errors[0].path == []
     assert errors[0].message == "value must be equal or greater than 42.75"
-    assert errors[1].path == "root"
+    assert errors[1].path == []
     assert errors[1].message == "value must be equal or lower than 42.25"
 
 def test_enum_type():
@@ -525,7 +525,7 @@ def test_enum_type():
     for value in [False, True, 42, 42.0, [], (), {}]:
         with pytest.raises(ValidationError) as e_info:
             object_to_document(value, specs)
-        assert e_info.value.path == "root"
+        assert e_info.value.path == []
         assert e_info.value.message == "was expecting a string"
 
     for value in ['foo', 'bar', 'quz']:
@@ -535,5 +535,5 @@ def test_enum_type():
     # test if value is being checked against the valid values
     with pytest.raises(ValidationError) as e_info:
         object_to_document("Hello world!", specs)
-    assert e_info.value.path == "root"
+    assert e_info.value.path == []
     assert e_info.value.message == "enum value is invalid"

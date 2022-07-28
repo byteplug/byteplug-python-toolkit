@@ -29,33 +29,33 @@ def validate_minimum_or_maximum_property(name, path, value, errors):
         # Only 'exclusive' and 'value' properties are accepted.
         extra_properties = set(value.keys()) - {'exclusive', 'value'}
         if extra_properties:
-            error = ValidationError(path + f'.{name}', f"'{extra_properties.pop()}' property is unexpected")
+            error = ValidationError(path + [name], f"'{extra_properties.pop()}' property is unexpected")
             errors.append(error)
             return
 
         exclusive = value.get('exclusive')
         if exclusive and type(exclusive) is not bool:
-            error = ValidationError(path + f'.{name}.exclusive', f"value must be a bool")
+            error = ValidationError(path + [name, 'exclusive'], f"value must be a bool")
             errors.append(error)
         else:
             exclusive = False
 
         value_ = value.get('value')
         if value_ == None:
-            error = ValidationError(path + f'.{name}', "'value' property is missing")
+            error = ValidationError(path + [name], "'value' property is missing")
             errors.append(error)
         elif type(value_) not in (int, float):
-            error = ValidationError(path + f'.{name}.value', "value must be a number")
+            error = ValidationError(path + [name, 'value'], "value must be a number")
             errors.append(error)
 
         return (exclusive, value_)
     else:
-        error = ValidationError(path + f'.{name}', f"value must be either a number or a dict")
+        error = ValidationError(path + [name], f"value must be either a number or a dict")
         errors.append(error)
 
 def validate_length_property(path, value, errors, warnings):
 
-    path = path + '.length'
+    path = path + ['length']
 
     if type(value) in (int, float):
         if value < 0:
@@ -77,7 +77,7 @@ def validate_length_property(path, value, errors, warnings):
         minimum = value.get('minimum')
         if minimum:
             if type(minimum) not in (int, float):
-                error = ValidationError(path + '.minimum', "value must be a number")
+                error = ValidationError(path + ['minimum'], "value must be a number")
                 errors.append(error)
 
             if type(minimum) is float:
@@ -85,13 +85,13 @@ def validate_length_property(path, value, errors, warnings):
                 warnings.append(warning)
 
             if minimum < 0:
-                error = ValidationError(path + '.minimum', "must be greater or equal to zero")
+                error = ValidationError(path + ['minimum'], "must be greater or equal to zero")
                 errors.append(error)
 
         maximum = value.get('maximum')
         if maximum:
             if type(maximum) not in (int, float):
-                error = ValidationError(path + '.maximum', "value must be a number")
+                error = ValidationError(path + ['maximum'], "value must be a number")
                 errors.append(error)
 
             if type(maximum) is float:
@@ -99,7 +99,7 @@ def validate_length_property(path, value, errors, warnings):
                 warnings.append(warning)
 
             if maximum < 0:
-                error = ValidationError(path + '.maximum', "must be greater or equal to zero")
+                error = ValidationError(path + ['maximum'], "must be greater or equal to zero")
                 errors.append(error)
 
         if minimum != None and maximum != None:
@@ -121,7 +121,7 @@ def validate_integer_type(path, block, errors, warnings):
 
         # TODO; The path is not accurate, it should either be .minimum.value or .minimum
         if minimum is not None and type(minimum[1]) is float:
-            warning = ValidationWarning(path + '.minimum', "should be an integer (got float)")
+            warning = ValidationWarning(path + ['minimum'], "should be an integer (got float)")
             warnings.append(warning)
 
     maximum = None
@@ -130,7 +130,7 @@ def validate_integer_type(path, block, errors, warnings):
 
         # TODO; The path is not accurate, it should either be .maximum.value or .maximum
         if maximum is not None and type(maximum[1]) is float:
-            warning = ValidationWarning(path + '.maximum', "should be an integer (got float)")
+            warning = ValidationWarning(path + ['maximum'], "should be an integer (got float)")
             warnings.append(warning)
 
     if minimum and maximum:
@@ -146,7 +146,7 @@ def validate_string_type(path, block, errors, warnings):
     pattern = block.get('pattern')
     if pattern != None:
         if type(pattern) is not str:
-            error = ValidationError(path + '.pattern', "value must be a string")
+            error = ValidationError(path + ['pattern'], "value must be a string")
             errors.append(error)
 
 def validate_list_type(path, block, errors, warnings):
@@ -156,7 +156,7 @@ def validate_list_type(path, block, errors, warnings):
         errors.append(error)
         return
 
-    validate_block(path + '.[]', value, errors, warnings)
+    validate_block(path + ['[]'], value, errors, warnings)
 
     if 'length' in block:
         validate_length_property(path, block['length'], errors, warnings)
@@ -169,17 +169,17 @@ def validate_tuple_type(path, block, errors, warnings):
         return
 
     if type(values) is not list:
-        error = ValidationError(path + '.values', "value must be a list")
+        error = ValidationError(path + ['values'], "value must be a list")
         errors.append(error)
         return
 
     if len(values) == 0:
-        error = ValidationError(path + '.values', "must contain at least one value")
+        error = ValidationError(path + ['values'], "must contain at least one value")
         errors.append(error)
         return
 
     for (index, value) in enumerate(values):
-        validate_block(path + '.(' + str(index) + ')', value, errors, warnings)
+        validate_block(path + ['(' + str(index) + ')'], value, errors, warnings)
 
 def validate_map_type(path, block, errors, warnings):
     fields = block.get("fields")
@@ -189,22 +189,22 @@ def validate_map_type(path, block, errors, warnings):
         return
 
     if type(fields) is not dict:
-        error = ValidationError(path + '.fields', "value must be a dict")
+        error = ValidationError(path + ['fields'], "value must be a dict")
         errors.append(error)
         return
 
     if len(fields) == 0:
-        error = ValidationError(path + '.fields', "must contain at least one field")
+        error = ValidationError(path + ['fields'], "must contain at least one field")
         errors.append(error)
         return
 
     for key, value in fields.items():
         if not re.match(r"^[a-z]+(-[a-z]+)*$", key):
-            error = ValidationError(path + '.fields', f"'{key}' is an incorrect key name")
+            error = ValidationError(path + ['fields'], f"'{key}' is an incorrect key name")
             errors.append(error)
             continue
 
-        validate_block(path + "." + key, value, errors, warnings)
+        validate_block(path + [key], value, errors, warnings)
 
 def validate_decimal_type(path, block, errors, warnings):
     minimum = None
@@ -228,12 +228,12 @@ def validate_enum_type(path, block, errors, warnings):
         return
 
     if type(values) is not list:
-        error = ValidationError(path + '.values', "value must be a list")
+        error = ValidationError(path + ['values'], "value must be a list")
         errors.append(error)
         return
 
     if len(values) == 0:
-        error = ValidationError(path + '.values', "must contain at least one value")
+        error = ValidationError(path + ['values'], "must contain at least one value")
         errors.append(error)
         return
 
@@ -241,12 +241,12 @@ def validate_enum_type(path, block, errors, warnings):
     processed_values = []
     for value in values:
         if not re.match(r"^[a-z]+(-[a-z]+)*$", value):
-            error = ValidationError(path + '.values', f"'{value}' is an incorrect value")
+            error = ValidationError(path + ['values'], f"'{value}' is an incorrect value")
             errors.append(error)
             continue
 
         if value in processed_values:
-            error = ValidationError(path + '.values', f"'{value}' value is duplicated")
+            error = ValidationError(path + ['values'], f"'{value}' value is duplicated")
             errors.append(error)
             continue
         else:
@@ -288,17 +288,17 @@ def validate_block(path, block, errors, warnings):
     validators[type_][0](path, block, errors, warnings)
 
     if 'option' in block and type(block['option']) is not bool:
-        error = ValidationError(path + '.option', "value must be a bool")
+        error = ValidationError(path + ['option'], "value must be a bool")
         errors.append(error)
 
 def validate_root_block(block, errors, warnings):
     if type(block) is not dict:
         # Early termination if the root block is not a dict.
-        error = ValidationError("root", "root value must be a dict")
+        error = ValidationError([], "root value must be a dict")
         errors.append(error)
         return
 
-    validate_block("root", block, errors, warnings)
+    validate_block([], block, errors, warnings)
 
 def validate_specs(specs, errors=None, warnings=None):
     """ Validate the YAML specs.
