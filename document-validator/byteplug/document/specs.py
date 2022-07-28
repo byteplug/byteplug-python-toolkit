@@ -291,15 +291,6 @@ def validate_block(path, block, errors, warnings):
         error = ValidationError(path + ['option'], "value must be a bool")
         errors.append(error)
 
-def validate_root_block(block, errors, warnings):
-    if type(block) is not dict:
-        # Early termination if the root block is not a dict.
-        error = ValidationError([], "root value must be a dict")
-        errors.append(error)
-        return
-
-    validate_block([], block, errors, warnings)
-
 def validate_specs(specs, errors=None, warnings=None):
     """ Validate the YAML specs.
 
@@ -345,7 +336,7 @@ def validate_specs(specs, errors=None, warnings=None):
     if warnings is None:
         warnings = []
 
-    validate_root_block(specs, errors, warnings)
+    validate_block([], specs, errors, warnings)
 
     # If we're not lazy-validating the specs, we raise the first error that
     # occurred.

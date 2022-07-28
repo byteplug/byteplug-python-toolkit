@@ -82,12 +82,12 @@ def additional_properties_test(specs):
     assert e_info.value.path == []
     assert e_info.value.message == "'foo' property is unexpected"
 
-def test_root_block():
-    # root block must be a dict
+def test_type_block():
+    # type blocks must be a dict
     for specs in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e_info:
             validate_specs(specs)
-        assert e_info.value.message == "root value must be a dict"
+        assert e_info.value.message == "value must be a dict"
 
     # 'type' property is missing
     with pytest.raises(ValidationError) as e_info:
