@@ -131,108 +131,6 @@ def test_integer_type():
     assert errors[1].path == "root"
     assert errors[1].message == "value must be equal or lower than 41"
 
-def test_decimal_type():
-    specs = {'type': 'decimal'}
-
-    for value in [False, True, 42, "Hello world!", [], (), {}]:
-        with pytest.raises(ValidationError) as e_info:
-            object_to_document(value, specs)
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "was expecting a float"
-
-    document = object_to_document(42.5, specs)
-    assert document == "42.5"
-
-    # test if value is being checked against minimum value
-    specs = {
-        'type': 'decimal',
-        'minimum': 42.5
-    }
-
-    object_to_document(42.5, specs)
-    with pytest.raises(ValidationError) as e_info:
-        object_to_document(42.4, specs)
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "value must be equal or greater than 42.5"
-
-    specs = {
-        'type': 'decimal',
-        'minimum': {
-            'exclusive': False,
-            'value': 42.5
-        }
-    }
-    object_to_document(42.5, specs)
-    with pytest.raises(ValidationError) as e_info:
-        object_to_document(42.4, specs)
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "value must be equal or greater than 42.5"
-
-    specs = {
-        'type': 'decimal',
-        'minimum': {
-            'exclusive': True,
-            'value': 42.5
-        }
-    }
-    object_to_document(42.6, specs)
-    with pytest.raises(ValidationError) as e_info:
-        object_to_document(42.5, specs)
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "value must be strictly greater than 42.5"
-
-    # test if value is being checked against maximum value
-    specs = {
-        'type': 'decimal',
-        'maximum': 42.5
-    }
-
-    object_to_document(42.5, specs)
-    with pytest.raises(ValidationError) as e_info:
-        object_to_document(42.6, specs)
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "value must be equal or lower than 42.5"
-
-    specs = {
-        'type': 'decimal',
-        'maximum': {
-            'exclusive': False,
-            'value': 42.5
-        }
-    }
-    object_to_document(42.5, specs)
-    with pytest.raises(ValidationError) as e_info:
-        object_to_document(42.6, specs)
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "value must be equal or lower than 42.5"
-
-    specs = {
-        'type': 'decimal',
-        'maximum': {
-            'exclusive': True,
-            'value': 42.5
-        }
-    }
-    object_to_document(42.4, specs)
-    with pytest.raises(ValidationError) as e_info:
-        object_to_document(42.5, specs)
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "value must be strictly lower than 42.5"
-
-    # test lazy validation
-    specs = {
-        'type': 'decimal',
-        'minimum': 42.75,
-        'maximum': 42.25
-    }
-
-    errors = []
-    object_to_document(42.5, specs, errors=errors)
-    assert errors[0].path == "root"
-    assert errors[0].message == "value must be equal or greater than 42.75"
-    assert errors[1].path == "root"
-    assert errors[1].message == "value must be equal or lower than 42.25"
-
 def test_string_type():
     specs = {'type': 'string'}
 
@@ -326,28 +224,6 @@ def test_string_type():
     assert errors[0].message == "length must be equal to 42"
     assert errors[1].path == "root"
     assert errors[1].message == "value did not match the pattern"
-
-def test_enum_type():
-    specs = {
-        'type': 'enum',
-        'values': ['foo', 'bar', 'quz']
-    }
-
-    for value in [False, True, 42, 42.0, [], (), {}]:
-        with pytest.raises(ValidationError) as e_info:
-            object_to_document(value, specs)
-        assert e_info.value.path == "root"
-        assert e_info.value.message == "was expecting a string"
-
-    for value in ['foo', 'bar', 'quz']:
-        document = object_to_document(value, specs)
-        assert document == f'"{value}"'
-
-    # test if value is being checked against the valid values
-    with pytest.raises(ValidationError) as e_info:
-        object_to_document("Hello world!", specs)
-    assert e_info.value.path == "root"
-    assert e_info.value.message == "enum value is invalid"
 
 def test_list_type():
     specs = {'type': 'list', 'value': {'type': 'string'}}
@@ -537,3 +413,127 @@ def test_map_type():
     assert errors[1].message == "was expecting an integer"
     assert errors[2].path == "root.quz"
     assert errors[2].message == "was expecting a string"
+
+def test_decimal_type():
+    specs = {'type': 'decimal'}
+
+    for value in [False, True, 42, "Hello world!", [], (), {}]:
+        with pytest.raises(ValidationError) as e_info:
+            object_to_document(value, specs)
+        assert e_info.value.path == "root"
+        assert e_info.value.message == "was expecting a float"
+
+    document = object_to_document(42.5, specs)
+    assert document == "42.5"
+
+    # test if value is being checked against minimum value
+    specs = {
+        'type': 'decimal',
+        'minimum': 42.5
+    }
+
+    object_to_document(42.5, specs)
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(42.4, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "value must be equal or greater than 42.5"
+
+    specs = {
+        'type': 'decimal',
+        'minimum': {
+            'exclusive': False,
+            'value': 42.5
+        }
+    }
+    object_to_document(42.5, specs)
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(42.4, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "value must be equal or greater than 42.5"
+
+    specs = {
+        'type': 'decimal',
+        'minimum': {
+            'exclusive': True,
+            'value': 42.5
+        }
+    }
+    object_to_document(42.6, specs)
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(42.5, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "value must be strictly greater than 42.5"
+
+    # test if value is being checked against maximum value
+    specs = {
+        'type': 'decimal',
+        'maximum': 42.5
+    }
+
+    object_to_document(42.5, specs)
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(42.6, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "value must be equal or lower than 42.5"
+
+    specs = {
+        'type': 'decimal',
+        'maximum': {
+            'exclusive': False,
+            'value': 42.5
+        }
+    }
+    object_to_document(42.5, specs)
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(42.6, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "value must be equal or lower than 42.5"
+
+    specs = {
+        'type': 'decimal',
+        'maximum': {
+            'exclusive': True,
+            'value': 42.5
+        }
+    }
+    object_to_document(42.4, specs)
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document(42.5, specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "value must be strictly lower than 42.5"
+
+    # test lazy validation
+    specs = {
+        'type': 'decimal',
+        'minimum': 42.75,
+        'maximum': 42.25
+    }
+
+    errors = []
+    object_to_document(42.5, specs, errors=errors)
+    assert errors[0].path == "root"
+    assert errors[0].message == "value must be equal or greater than 42.75"
+    assert errors[1].path == "root"
+    assert errors[1].message == "value must be equal or lower than 42.25"
+
+def test_enum_type():
+    specs = {
+        'type': 'enum',
+        'values': ['foo', 'bar', 'quz']
+    }
+
+    for value in [False, True, 42, 42.0, [], (), {}]:
+        with pytest.raises(ValidationError) as e_info:
+            object_to_document(value, specs)
+        assert e_info.value.path == "root"
+        assert e_info.value.message == "was expecting a string"
+
+    for value in ['foo', 'bar', 'quz']:
+        document = object_to_document(value, specs)
+        assert document == f'"{value}"'
+
+    # test if value is being checked against the valid values
+    with pytest.raises(ValidationError) as e_info:
+        object_to_document("Hello world!", specs)
+    assert e_info.value.path == "root"
+    assert e_info.value.message == "enum value is invalid"

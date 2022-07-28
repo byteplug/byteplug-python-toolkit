@@ -138,20 +138,6 @@ def validate_integer_type(path, block, errors, warnings):
             error = ValidationError(path, "minimum must be lower than maximum")
             errors.append(error)
 
-def validate_decimal_type(path, block, errors, warnings):
-    minimum = None
-    if 'minimum' in block:
-        minimum = validate_minimum_or_maximum_property('minimum', path, block['minimum'], errors)
-
-    maximum = None
-    if 'maximum' in block:
-        maximum = validate_minimum_or_maximum_property('maximum', path, block['maximum'], errors)
-
-    if minimum and maximum:
-        if maximum[1] < minimum[1]:
-            error = ValidationError(path, "minimum must be lower than maximum")
-            errors.append(error)
-
 def validate_string_type(path, block, errors, warnings):
     if 'length' in block:
         validate_length_property(path, block['length'], errors, warnings)
@@ -162,38 +148,6 @@ def validate_string_type(path, block, errors, warnings):
         if type(pattern) is not str:
             error = ValidationError(path + '.pattern', "value must be a string")
             errors.append(error)
-
-def validate_enum_type(path, block, errors, warnings):
-    values = block.get('values')
-    if values is None:
-        error = ValidationError(path, "'values' property is missing")
-        errors.append(error)
-        return
-
-    if type(values) is not list:
-        error = ValidationError(path + '.values', "value must be a list")
-        errors.append(error)
-        return
-
-    if len(values) == 0:
-        error = ValidationError(path + '.values', "must contain at least one value")
-        errors.append(error)
-        return
-
-    # Check for duplicates and check for validity of their value.
-    processed_values = []
-    for value in values:
-        if not re.match(r"^[a-z]+(-[a-z]+)*$", value):
-            error = ValidationError(path + '.values', f"'{value}' is an incorrect value")
-            errors.append(error)
-            continue
-
-        if value in processed_values:
-            error = ValidationError(path + '.values', f"'{value}' value is duplicated")
-            errors.append(error)
-            continue
-        else:
-            processed_values.append(value)
 
 def validate_list_type(path, block, errors, warnings):
     value = block.get('value')
@@ -252,15 +206,61 @@ def validate_map_type(path, block, errors, warnings):
 
         validate_block(path + "." + key, value, errors, warnings)
 
+def validate_decimal_type(path, block, errors, warnings):
+    minimum = None
+    if 'minimum' in block:
+        minimum = validate_minimum_or_maximum_property('minimum', path, block['minimum'], errors)
+
+    maximum = None
+    if 'maximum' in block:
+        maximum = validate_minimum_or_maximum_property('maximum', path, block['maximum'], errors)
+
+    if minimum and maximum:
+        if maximum[1] < minimum[1]:
+            error = ValidationError(path, "minimum must be lower than maximum")
+            errors.append(error)
+
+def validate_enum_type(path, block, errors, warnings):
+    values = block.get('values')
+    if values is None:
+        error = ValidationError(path, "'values' property is missing")
+        errors.append(error)
+        return
+
+    if type(values) is not list:
+        error = ValidationError(path + '.values', "value must be a list")
+        errors.append(error)
+        return
+
+    if len(values) == 0:
+        error = ValidationError(path + '.values', "must contain at least one value")
+        errors.append(error)
+        return
+
+    # Check for duplicates and check for validity of their value.
+    processed_values = []
+    for value in values:
+        if not re.match(r"^[a-z]+(-[a-z]+)*$", value):
+            error = ValidationError(path + '.values', f"'{value}' is an incorrect value")
+            errors.append(error)
+            continue
+
+        if value in processed_values:
+            error = ValidationError(path + '.values', f"'{value}' value is duplicated")
+            errors.append(error)
+            continue
+        else:
+            processed_values.append(value)
+
 validators = {
     "flag"     : (validate_flag_type,     []),
     "integer"  : (validate_integer_type,  ['minimum', 'maximum']),
-    "decimal"  : (validate_decimal_type,  ['minimum', 'maximum']),
     "string"   : (validate_string_type,   ['length', 'pattern']),
-    "enum"     : (validate_enum_type,     ['values']),
     "list"     : (validate_list_type,     ['value', 'length']),
     "tuple"    : (validate_tuple_type,    ['values']),
-    "map"      : (validate_map_type,      ['fields'])
+    "map"      : (validate_map_type,      ['fields']),
+    "decimal"  : (validate_decimal_type,  ['minimum', 'maximum']),
+    "enum"     : (validate_enum_type,     ['values'])
 }
 
 def validate_block(path, block, errors, warnings):
