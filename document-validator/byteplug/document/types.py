@@ -7,16 +7,22 @@
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
 class Type:
-    def __init__(self, option) -> None:
+    def __init__(self, name=None, description=None, option=None) -> None:
+        self.name = name
+        self.description = description
         self.option = option
 
     def update_object(self, object):
+        if self.name:
+            object['name'] = self.name
+        if self.description:
+            object['description'] = self.description
         if self.option:
             object['option'] = True
 
 class Flag(Type):
-    def __init__(self, option=False) -> None:
-        Type.__init__(self, option)
+    def __init__(self, **kwargs) -> None:
+        Type.__init__(self, **kwargs)
 
     def to_object(self):
         object = {'type': 'flag'}
@@ -25,8 +31,8 @@ class Flag(Type):
         return object
 
 class Integer(Type):
-    def __init__(self, min=None, max=None, option=False) -> None:
-        Type.__init__(self, option)
+    def __init__(self, min=None, max=None, **kwargs) -> None:
+        Type.__init__(self, **kwargs)
 
         # Integer(min=42)
         # Integer(min=(42, True))
@@ -74,8 +80,8 @@ class Integer(Type):
         return object
 
 class String(Type):
-    def __init__(self, length=None, pattern=None, option=False) -> None:
-        Type.__init__(self, option)
+    def __init__(self, length=None, pattern=None, **kwargs) -> None:
+        Type.__init__(self, **kwargs)
         # String(length=42)
         # String(length=(42, None))
         # String(length=(None, 42))
@@ -109,8 +115,8 @@ class String(Type):
         return object
 
 class Enum(Type):
-    def __init__(self, values, option=False) -> None:
-        Type.__init__(self, option)
+    def __init__(self, values, **kwargs) -> None:
+        Type.__init__(self, **kwargs)
         self.values = values
 
     def to_object(self):
@@ -121,8 +127,8 @@ class Enum(Type):
         return object
 
 class List(Type):
-    def __init__(self, value, length=None, option=False) -> None:
-        Type.__init__(self, option)
+    def __init__(self, value, length=None, **kwargs) -> None:
+        Type.__init__(self, **kwargs)
 
         assert isinstance(value, Type), "value type is invalid"
         self.value = value
@@ -153,8 +159,8 @@ class List(Type):
         return object
 
 class Tuple(Type):
-    def __init__(self, values, option=False) -> None:
-        Type.__init__(self, option)
+    def __init__(self, values, **kwargs) -> None:
+        Type.__init__(self, **kwargs)
 
         assert type(values) in [list, tuple], "values type is invalid"
         for value in values:
@@ -170,8 +176,8 @@ class Tuple(Type):
         return object
 
 class Map(Type):
-    def __init__(self, fields, option=False) -> None:
-        Type.__init__(self, option)
+    def __init__(self, fields, **kwargs) -> None:
+        Type.__init__(self, **kwargs)
 
         assert type(fields) is dict, "fields type is invalid"
         for key, value in fields.items():

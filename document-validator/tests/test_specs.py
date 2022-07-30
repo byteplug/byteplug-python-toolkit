@@ -85,6 +85,13 @@ def additional_properties_test(specs):
     assert errors[1].path == []
     assert errors[1].message == "'foo' property is unexpected"
 
+def name_property_test(specs):
+    # validate_specs(specs | {'foo': 'bar', 'bar': 'foo'})
+    string_value_property_test(specs, "name", [])
+
+def description_property_test(specs):
+    string_value_property_test(specs, "description", [])
+
 def test_type_block():
     # type blocks must be a dict
     for specs in [False, True, 42, "Hello world!"]:
@@ -106,6 +113,10 @@ def test_flag_type():
     # test minimal specs
     specs = {'type': 'flag'}
     validate_specs(specs)
+
+    # test 'name' and 'description' properties
+    name_property_test(specs)
+    description_property_test(specs)
 
     # test the 'option' property
     option_property_test(specs, [])
@@ -132,6 +143,10 @@ def test_integer_type():
     # test minimal specs
     specs = {'type': 'integer'}
     validate_specs(specs)
+
+    # test 'name' and 'description' properties
+    name_property_test(specs)
+    description_property_test(specs)
 
     # test 'minimum' property
     validate_specs(specs | {'minimum': 42})
@@ -252,6 +267,10 @@ def test_string_type():
     specs = {'type': 'string'}
     validate_specs(specs)
 
+    # test 'name' and 'description' properties
+    name_property_test(specs)
+    description_property_test(specs)
+
     # test the 'length' property
     validate_specs(specs | {'length': 42})
 
@@ -346,6 +365,10 @@ def test_list_type():
     validate_specs({'type': 'list', 'value': {'type': 'flag'}})
     validate_specs({'type': 'list', 'value': {'type': 'integer'}})
     validate_specs(specs)
+
+    # test 'name' and 'description' properties
+    name_property_test(specs)
+    description_property_test(specs)
 
     # test the 'value' property
     with pytest.raises(ValidationError) as e:
@@ -465,6 +488,10 @@ def test_tuple_type():
 
     validate_specs(specs)
 
+    # test 'name' and 'description' properties
+    name_property_test(specs)
+    description_property_test(specs)
+
     # test the 'values' property
     for values in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e:
@@ -560,6 +587,10 @@ def test_map_type():
 
     validate_specs(specs)
 
+    # test 'name' and 'description' properties
+    name_property_test(specs)
+    description_property_test(specs)
+
     # test the 'fields' property
     for value in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e:
@@ -646,6 +677,10 @@ def test_decimal_type():
     # test minimal specs
     specs = {'type': 'decimal'}
     validate_specs(specs)
+
+    # test 'name' and 'description' properties
+    name_property_test(specs)
+    description_property_test(specs)
 
     # test 'minimum' property
     validate_specs(specs | {'minimum': 42})

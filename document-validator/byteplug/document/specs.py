@@ -283,7 +283,8 @@ def validate_block(path, block, errors, warnings):
     # Note that we turn the set into a list and sort it in order to get a
     # deterministic behavior (without it, the order in which extra properties
     # are reported would vary).
-    extra_properties = set(block.keys()) - set(validators[type_][1]) - {'type', 'option'}
+    common_properties = {'name', 'description', 'type', 'option'}
+    extra_properties = set(block.keys()) - set(validators[type_][1]) - common_properties
     extra_properties = list(extra_properties)
     extra_properties.sort()
 
@@ -292,6 +293,14 @@ def validate_block(path, block, errors, warnings):
         errors.append(error)
 
     validators[type_][0](path, block, errors, warnings)
+
+    if 'name' in block and type(block['name']) is not str:
+        error = ValidationError(path + ['name'], "value must be a string")
+        errors.append(error)
+
+    if 'description' in block and type(block['description']) is not str:
+        error = ValidationError(path + ['description'], "value must be a string")
+        errors.append(error)
 
     if 'option' in block and type(block['option']) is not bool:
         error = ValidationError(path + ['option'], "value must be a bool")
