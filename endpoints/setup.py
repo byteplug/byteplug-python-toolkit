@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='byteplug-endpoints',
-    version='0.1',
+    version='0.1.2.dev1',
     description="Byteplug toolkit that implements the Endpoints standard.",
     url='https://www.byteplug.io/standards/endpoints',
     author='Jonathan De Wachter',
