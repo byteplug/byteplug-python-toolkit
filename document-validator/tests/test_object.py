@@ -345,7 +345,10 @@ def test_map_type():
         'type': 'map',
         'fields': {
             'foo': {'type': 'flag'},
-            'bar': {'type': 'integer'},
+            'bar': {
+                'type': 'integer',
+                'option': True
+            },
             'quz': {'type': 'string'}
         }
     }
@@ -397,6 +400,16 @@ def test_map_type():
         object_to_document(value, specs)
     assert e.value.path == []
     assert e.value.message == "'quz' field was missing"
+
+    # test if missing optional fields are NOT reported
+    value = {
+        "foo": True,
+        "quz": "Hello world!"
+    }
+    document = object_to_document(value, specs)
+    # TODO; Note that the order is not preserved. Implementation can be changed
+    #       in order to keep it.
+    assert document == '{"foo": true, "quz": "Hello world!", "bar": null}'
 
     # test lazy validation
     errors = []

@@ -366,7 +366,10 @@ def test_map_type():
         'type': 'map',
         'fields': {
             'foo': {'type': 'flag'},
-            'bar': {'type': 'integer'},
+            'bar': {
+                'type': 'integer',
+                'option': True
+            },
             'quz': {'type': 'string'}
         }
     }
@@ -396,6 +399,15 @@ def test_map_type():
         document_to_object('{"foo": true, "bar": 42}', specs)
     assert e.value.path == []
     assert e.value.message == "'quz' field was missing"
+
+    # test if missing optional fields are NOT reported
+    object = document_to_object('{"foo": true, "quz": "Hello world!"}', specs)
+    assert type(object) is dict
+    assert object == {
+        "foo": True,
+        "bar": None,
+        "quz": "Hello world!"
+    }
 
     # test lazy validation
     errors = []

@@ -210,8 +210,14 @@ def process_map_node(path, node, specs, errors, warnings):
 
     missing_keys = set(fields.keys()) - set(adjusted_node.keys())
     for key in missing_keys:
-        error = ValidationError(path, f"'{key}' field was missing")
-        errors.append(error)
+        if not fields[key].get('option', False):
+            error = ValidationError(path, f"'{key}' field was missing")
+            errors.append(error)
+        else:
+            # We insert a 'null' value when the key is missing and the item is
+            # optional.
+            adjusted_node[key] = None
+
 
     if len(node_errors) > 0:
         errors.extend(node_errors)
