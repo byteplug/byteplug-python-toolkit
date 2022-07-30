@@ -39,6 +39,31 @@ def test_integer_type():
     }
     yaml.dump(integer)
 
+def test_decimal_type():
+    Decimal(min=42.5)
+    Decimal(min=(42.5, True))
+    Decimal(min=(42.5, False))
+
+    Decimal(max=42.5)
+    Decimal(max=(42.5, True))
+    Decimal(max=(42.5, False))
+
+    decimal = Decimal(
+        min=10,
+        max=(42.5, True),
+        option=True
+    )
+    assert decimal.to_object() == {
+        'type': 'decimal',
+        'minimum': 10.,
+        'maximum': {
+            'exclusive': True,
+            'value': 42.5
+        },
+        'option': True
+    }
+    yaml.dump(decimal)
+
 def test_string_type():
     String(length=42)
     String(length=(42, None))

@@ -79,6 +79,71 @@ class Integer(Type):
         Type.update_object(self, object)
         return object
 
+class Decimal(Type):
+    def __init__(self, min=None, max=None, **kwargs) -> None:
+        Type.__init__(self, **kwargs)
+
+        # Decimal(min=42.5)
+        # Decimal(min=(42.5, True))
+        # Decimal(min=(42.5, False))
+        # Decimal(max=42.5)
+        # Decimal(max=(42.5, True))
+        # Decimal(max=(42.5, False))
+        if min:
+            assert type(min) in [int, float, tuple], "min value is invalid"
+
+            if type(min) is int:
+                min = float(min)
+
+            if type(min) is tuple:
+                assert type(min[0]) in [int, float], "min value in invalid"
+
+                if type(min[0]) is int:
+                    min[0] = float(min[0])
+
+                assert type(min[1]) is bool, "min value in invalid"
+
+        if max:
+            assert type(max) in [int, float, tuple], "max value is invalid"
+
+            if type(max) is int:
+                max = float(max)
+
+            if type(max) is tuple:
+                assert type(max[0]) in [int, float], "max value in invalid"
+
+                if type(max[0]) is int:
+                    max[0] = float(max[0])
+
+                assert type(max[1]) is bool, "max value in invalid"
+
+        self.minimum = min
+        self.maximum = max
+
+    def to_object(self):
+        object = {'type': 'decimal'}
+
+        if self.minimum:
+            if type(self.minimum) is float:
+                object['minimum'] = self.minimum
+            else:
+                object['minimum'] = {
+                    'exclusive': self.minimum[1],
+                    'value': self.minimum[0]
+                }
+
+        if self.maximum:
+            if type(self.maximum) is float:
+                object['maximum'] = self.maximum
+            else:
+                object['maximum'] = {
+                    'exclusive': self.maximum[1],
+                    'value': self.maximum[0]
+                }
+
+        Type.update_object(self, object)
+        return object
+
 class String(Type):
     def __init__(self, length=None, pattern=None, **kwargs) -> None:
         Type.__init__(self, **kwargs)
