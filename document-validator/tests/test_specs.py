@@ -199,9 +199,9 @@ def test_flag_type():
     assert errors[1].path == ["option"]
     assert errors[1].message == "value must be a bool"
 
-def test_integer_type():
+def test_number_type():
     # test minimal specs
-    specs = {'type': 'integer'}
+    specs = {'type': 'number'}
     validate_specs(specs)
 
     # test 'name' and 'description' properties
@@ -303,7 +303,7 @@ def test_integer_type():
 
     # test lazy validation
     specs = {
-        'type': 'integer',
+        'type': 'number',
         'minimum': False,
         'maximum': "Hello world!",
         'option': 42,
@@ -377,7 +377,7 @@ def test_array_type():
     missing_property_test({'type': 'array'}, 'value')
 
     validate_specs({'type': 'array', 'value': {'type': 'flag'}})
-    validate_specs({'type': 'array', 'value': {'type': 'integer'}})
+    validate_specs({'type': 'array', 'value': {'type': 'number'}})
     validate_specs(specs)
 
     # test 'name' and 'description' properties
@@ -527,7 +527,7 @@ def test_tuple_type():
         'type': 'tuple',
         'items': [
             {'type': 'flag'},
-            {'type': 'integer'},
+            {'type': 'number'},
             {'type': 'string'}
         ]
     }
@@ -622,7 +622,7 @@ def test_map_type():
         'type': 'map',
         'fields': {
             'foo': {'type': 'flag'},
-            'bar': {'type': 'integer'},
+            'bar': {'type': 'number'},
             'quz': {'type': 'string'}
         }
     }
@@ -713,117 +713,6 @@ def test_map_type():
     assert errors[1].message == "'-foo' is an incorrect key name"
     assert errors[2].path == ["$bar"]
     assert errors[2].message == "value of 'type' is incorrect"
-    assert errors[3].path == ["option"]
-    assert errors[3].message == "value must be a bool"
-
-def test_decimal_type():
-    # test minimal specs
-    specs = {'type': 'decimal'}
-    validate_specs(specs)
-
-    # test 'name' and 'description' properties
-    name_property_test(specs)
-    description_property_test(specs)
-
-    # test 'minimum' property
-    validate_specs(specs | {'minimum': 42})
-    validate_specs(specs | {'minimum': {'value': 42}})
-    validate_specs(specs | {'minimum': {'exclusive': False, 'value': 42}})
-    validate_specs(specs | {'minimum': {'exclusive': True, 'value': 42}})
-
-    for invalid_value in [False, True, "Hello world!"]:
-        with pytest.raises(ValidationError) as e:
-            validate_specs(specs | {'minimum': invalid_value})
-        assert e.value.path == ["minimum"]
-        assert e.value.message == "value must be either a number or a dict"
-
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'minimum': {'exclusive': False}})
-    assert e.value.path == ["minimum"]
-    assert e.value.message == "'value' property is missing"
-
-    for invalid_value in [42, "Hello world!"]:
-        with pytest.raises(ValidationError) as e:
-            validate_specs(specs | {'minimum': {'exclusive': invalid_value, 'value': 42}})
-        assert e.value.path == ["minimum", "exclusive"]
-        assert e.value.message == "value must be a bool"
-
-    for invalid_value in [False, True, "Hello world!"]:
-        with pytest.raises(ValidationError) as e:
-            validate_specs(specs | {'minimum': {'exclusive': False, 'value': invalid_value}})
-        assert e.value.path == ["minimum", "value"]
-        assert e.value.message == "value must be a number"
-
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'minimum': {'value': 42, 'foo': 'bar'}})
-    assert e.value.path == ["minimum"]
-    assert e.value.message == "'foo' property is unexpected"
-
-    # test 'maximum' property
-    validate_specs(specs | {'maximum': 42})
-    validate_specs(specs | {'maximum': {'value': 42}})
-    validate_specs(specs | {'maximum': {'exclusive': False, 'value': 42}})
-    validate_specs(specs | {'maximum': {'exclusive': True, 'value': 42}})
-
-    for invalid_value in [False, True, "Hello world!"]:
-        with pytest.raises(ValidationError) as e:
-            validate_specs(specs | {'maximum': invalid_value})
-        assert e.value.path == ["maximum"]
-        assert e.value.message == "value must be either a number or a dict"
-
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'maximum': {'exclusive': False}})
-    assert e.value.path == ["maximum"]
-    assert e.value.message == "'value' property is missing"
-
-    for invalid_value in [42, "Hello world!"]:
-        with pytest.raises(ValidationError) as e:
-            validate_specs(specs | {'maximum': {'exclusive': invalid_value, 'value': 42}})
-        assert e.value.path == ["maximum", "exclusive"]
-        assert e.value.message == "value must be a bool"
-
-    for invalid_value in [False, True, "Hello world!"]:
-        with pytest.raises(ValidationError) as e:
-            validate_specs(specs | {'maximum': {'exclusive': False, 'value': invalid_value}})
-        assert e.value.path == ["maximum", "value"]
-        assert e.value.message == "value must be a number"
-
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'maximum': {'value': 42, 'foo': 'bar'}})
-    assert e.value.path == ["maximum"]
-    assert e.value.message == "'foo' property is unexpected"
-
-    # test minimum must be lower than maximum
-    for minimum, maximum in ((42, 0), (-9, -10), (1, -1)):
-        with pytest.raises(ValidationError) as e:
-            validate_specs(specs | {'minimum': minimum, 'maximum': maximum})
-        assert e.value.path == []
-        assert e.value.message == "minimum must be lower than maximum"
-
-    # test the 'option' property
-    option_property_test(specs, [])
-
-    # test additional properties
-    additional_properties_test(specs)
-
-    # test lazy validation
-    specs = {
-        'type': 'decimal',
-        'minimum': False,
-        'maximum': "Hello world!",
-        'option': 42,
-        'foo': 'bar'
-    }
-
-    errors = []
-    validate_specs(specs, errors=errors)
-
-    assert errors[0].path == []
-    assert errors[0].message == "'foo' property is unexpected"
-    assert errors[1].path == ["minimum"]
-    assert errors[1].message == "value must be either a number or a dict"
-    assert errors[2].path == ["maximum"]
-    assert errors[2].message == "value must be either a number or a dict"
     assert errors[3].path == ["option"]
     assert errors[3].message == "value must be a bool"
 

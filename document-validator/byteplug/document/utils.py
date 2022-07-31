@@ -9,7 +9,7 @@
 from byteplug.document.exception import ValidationError
 
 def read_minimum_value(specs):
-    assert specs['type'] in ('integer', 'decimal')
+    assert specs['type'] == 'number'
 
     minimum = specs.get('minimum')
     if minimum is not None:
@@ -21,7 +21,7 @@ def read_minimum_value(specs):
             return (exclusive, value)
 
 def read_maximum_value(specs):
-    assert specs['type'] in ('integer', 'decimal')
+    assert specs['type'] == 'number'
 
     maximum = specs.get('maximum')
     if maximum is not None:

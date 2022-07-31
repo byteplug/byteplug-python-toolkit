@@ -44,8 +44,8 @@ def test_flag_type():
     assert type(object) is bool
     assert object == True
 
-def test_integer_type():
-    specs = {'type': 'integer'}
+def test_number_type():
+    specs = {'type': 'number'}
 
     for value in ['false', 'true', '"Hello world!"', '[]', '{}']:
         with pytest.raises(ValidationError) as e:
@@ -60,7 +60,7 @@ def test_integer_type():
 
     # test if value is being checked against minimum value
     specs = {
-        'type': 'integer',
+        'type': 'number',
         'minimum': 42
     }
 
@@ -71,7 +71,7 @@ def test_integer_type():
     assert e.value.message == "value must be equal or greater than 42"
 
     specs = {
-        'type': 'integer',
+        'type': 'number',
         'minimum': {
             'exclusive': False,
             'value': 42
@@ -84,7 +84,7 @@ def test_integer_type():
     assert e.value.message == "value must be equal or greater than 42"
 
     specs = {
-        'type': 'integer',
+        'type': 'number',
         'minimum': {
             'exclusive': True,
             'value': 42
@@ -98,7 +98,7 @@ def test_integer_type():
 
     # test if value is being checked against maximum value
     specs = {
-        'type': 'integer',
+        'type': 'number',
         'maximum': 42
     }
 
@@ -109,7 +109,7 @@ def test_integer_type():
     assert e.value.message == "value must be equal or lower than 42"
 
     specs = {
-        'type': 'integer',
+        'type': 'number',
         'maximum': {
             'exclusive': False,
             'value': 42
@@ -122,7 +122,7 @@ def test_integer_type():
     assert e.value.message == "value must be equal or lower than 42"
 
     specs = {
-        'type': 'integer',
+        'type': 'number',
         'maximum': {
             'exclusive': True,
             'value': 42
@@ -136,7 +136,7 @@ def test_integer_type():
 
     # check if warning is raised when it's a decimal value
     warnings = []
-    object = document_to_object("42.5", {'type': 'integer'}, warnings=warnings)
+    object = document_to_object("42.5", {'type': 'number'}, warnings=warnings)
     assert type(object) is int
     assert object == 42
 
@@ -146,7 +146,7 @@ def test_integer_type():
 
     # test lazy validation
     specs = {
-        'type': 'integer',
+        'type': 'number',
         'minimum': 43,
         'maximum': 41
     }
@@ -274,7 +274,7 @@ def test_array_type():
     assert type(object) is list
     assert object == [True, False, True]
 
-    specs = {'type': 'array', 'value': {'type': 'integer'}}
+    specs = {'type': 'array', 'value': {'type': 'number'}}
     object = document_to_object('[10, 42, 100]', specs)
     assert type(object) is list
     assert object == [10, 42, 100]
@@ -334,7 +334,7 @@ def test_array_type():
     # test lazy validation
     specs = {
         'type': 'array',
-        'value': {'type': 'integer'},
+        'value': {'type': 'number'},
     }
 
     errors = []
@@ -378,7 +378,7 @@ def test_object_type():
     assert e.value.message == "key at index 1 is invalid; expected it to be an integer"
 
     # test with key set to 'string'
-    specs = {'type': 'object', 'key': 'string', 'value': {'type': 'integer'}}
+    specs = {'type': 'object', 'key': 'string', 'value': {'type': 'number'}}
 
     for name in VALID_NAMES:
         object = document_to_object('{"foo": 10, "name": 42, "quz": 100}'.replace('name', name), specs)
@@ -395,7 +395,7 @@ def test_object_type():
     specs = {
         'type': 'object',
         'key': 'string',
-        'value': {'type': 'integer'},
+        'value': {'type': 'number'},
         'length': 2
     }
 
@@ -414,7 +414,7 @@ def test_object_type():
     specs = {
         'type': 'object',
         'key': 'string',
-        'value': {'type': 'integer'},
+        'value': {'type': 'number'},
         'length': {
             'minimum': 2
         }
@@ -429,7 +429,7 @@ def test_object_type():
     specs = {
         'type': 'object',
         'key': 'string',
-        'value': {'type': 'integer'},
+        'value': {'type': 'number'},
         'length': {
             'maximum': 2
         }
@@ -445,7 +445,7 @@ def test_object_type():
     specs = {
         'type': 'object',
         'key': 'string',
-        'value': {'type': 'integer'},
+        'value': {'type': 'number'},
     }
 
     errors = []
@@ -461,7 +461,7 @@ def test_tuple_type():
         'type': 'tuple',
         'items': [
             {'type': 'flag'},
-            {'type': 'integer'},
+            {'type': 'number'},
             {'type': 'string'}
         ]
     }
@@ -496,7 +496,7 @@ def test_map_type():
         'fields': {
             'foo': {'type': 'flag'},
             'bar': {
-                'type': 'integer',
+                'type': 'number',
                 'option': True
             },
             'quz': {'type': 'string'}
@@ -547,111 +547,6 @@ def test_map_type():
     assert errors[1].message == "was expecting a JSON number"
     assert errors[2].path == ["$quz"]
     assert errors[2].message == "was expecting a JSON string"
-
-
-def test_decimal_type():
-    specs = {'type': 'decimal'}
-
-    for value in ['false', 'true', '"Hello world!"', '[]', '{}']:
-        with pytest.raises(ValidationError) as e:
-            document_to_object(value, specs)
-        assert e.value.path == []
-        assert e.value.message == "was expecting a JSON number"
-
-    for value in ['42', '42.0']:
-        object = document_to_object(value, specs)
-        assert type(object) is float
-        assert object == 42.0
-
-    # test if value is being checked against minimum value
-    specs = {
-        'type': 'decimal',
-        'minimum': 42.5
-    }
-
-    document_to_object("42.5", specs)
-    with pytest.raises(ValidationError) as e:
-        document_to_object("42.4", specs)
-    assert e.value.path == []
-    assert e.value.message == "value must be equal or greater than 42.5"
-
-    specs = {
-        'type': 'decimal',
-        'minimum': {
-            'exclusive': False,
-            'value': 42.5
-        }
-    }
-    document_to_object("42.5", specs)
-    with pytest.raises(ValidationError) as e:
-        document_to_object("42.4", specs)
-    assert e.value.path == []
-    assert e.value.message == "value must be equal or greater than 42.5"
-
-    specs = {
-        'type': 'decimal',
-        'minimum': {
-            'exclusive': True,
-            'value': 42.5
-        }
-    }
-    document_to_object("42.6", specs)
-    with pytest.raises(ValidationError) as e:
-        document_to_object("42.5", specs)
-    assert e.value.path == []
-    assert e.value.message == "value must be strictly greater than 42.5"
-
-    # test if value is being checked against maximum value
-    specs = {
-        'type': 'decimal',
-        'maximum': 42.5
-    }
-
-    document_to_object("42.5", specs)
-    with pytest.raises(ValidationError) as e:
-        document_to_object("42.6", specs)
-    assert e.value.path == []
-    assert e.value.message == "value must be equal or lower than 42.5"
-
-    specs = {
-        'type': 'decimal',
-        'maximum': {
-            'exclusive': False,
-            'value': 42.5
-        }
-    }
-    document_to_object("42.5", specs)
-    with pytest.raises(ValidationError) as e:
-        document_to_object("42.6", specs)
-    assert e.value.path == []
-    assert e.value.message == "value must be equal or lower than 42.5"
-
-    specs = {
-        'type': 'decimal',
-        'maximum': {
-            'exclusive': True,
-            'value': 42.5
-        }
-    }
-    document_to_object("42.4", specs)
-    with pytest.raises(ValidationError) as e:
-        document_to_object("42.5", specs)
-    assert e.value.path == []
-    assert e.value.message == "value must be strictly lower than 42.5"
-
-    # test lazy validation
-    specs = {
-        'type': 'decimal',
-        'minimum': 42.75,
-        'maximum': 42.25
-    }
-
-    errors = []
-    document_to_object("42.5", specs, errors=errors)
-    assert errors[0].path == []
-    assert errors[0].message == "value must be equal or greater than 42.75"
-    assert errors[1].path == []
-    assert errors[1].message == "value must be equal or lower than 42.25"
 
 def test_enum_type():
     specs = {

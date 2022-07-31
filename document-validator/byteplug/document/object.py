@@ -32,7 +32,7 @@ def process_flag_node(path, node, specs, errors, warnings):
 
     return node
 
-def process_integer_node(path, node, specs, errors, warnings):
+def process_number_node(path, node, specs, errors, warnings):
     if type(node) is not int:
         error = ValidationError(path, "was expecting an integer")
         errors.append(error)
@@ -214,45 +214,6 @@ def process_map_node(path, node, specs, errors, warnings):
 
     return adjusted_node
 
-def process_decimal_node(path, node, specs, errors, warnings):
-    if type(node) is not float:
-        error = ValidationError(path, "was expecting a float")
-        errors.append(error)
-        return
-
-    node_errors = []
-
-    minimum = read_minimum_value(specs)
-    maximum = read_maximum_value(specs)
-
-    if minimum:
-        is_exclusive, value = minimum
-        if is_exclusive:
-            if not (node > value):
-                error = ValidationError(path, f"value must be strictly greater than {value}")
-                node_errors.append(error)
-        else:
-            if not (node >= value):
-                error = ValidationError(path, f"value must be equal or greater than {value}")
-                node_errors.append(error)
-
-    if maximum:
-        is_exclusive, value = maximum
-        if is_exclusive:
-            if not (node < value):
-                error = ValidationError(path, f"value must be strictly lower than {value}")
-                node_errors.append(error)
-        else:
-            if not (node <= value):
-                error = ValidationError(path, f"value must be equal or lower than {value}")
-                node_errors.append(error)
-
-    if len(node_errors) > 0:
-        errors.extend(node_errors)
-        return
-
-    return node
-
 def process_enum_node(path, node, specs, errors, warnings):
     if type(node) is not str:
         error = ValidationError(path, "was expecting a string")
@@ -269,13 +230,12 @@ def process_enum_node(path, node, specs, errors, warnings):
 
 adjust_node_map = {
     'flag'   : process_flag_node,
-    'integer': process_integer_node,
+    'number' : process_number_node,
     'string' : process_string_node,
     'array'  : process_array_node,
     'object' : process_object_node,
     'tuple'  : process_tuple_node,
     'map'    : process_map_node,
-    'decimal': process_decimal_node,
     'enum'   : process_enum_node
 }
 

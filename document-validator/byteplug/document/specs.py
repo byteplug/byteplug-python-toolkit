@@ -114,7 +114,7 @@ def validate_flag_type(path, block, errors, warnings):
     # Nothing to do.
     pass
 
-def validate_integer_type(path, block, errors, warnings):
+def validate_number_type(path, block, errors, warnings):
     minimum = None
     if 'minimum' in block:
         minimum = validate_minimum_or_maximum_property('minimum', path, block['minimum'], errors)
@@ -228,20 +228,6 @@ def validate_map_type(path, block, errors, warnings):
 
         validate_block(path + ['$' + key], value, errors, warnings)
 
-def validate_decimal_type(path, block, errors, warnings):
-    minimum = None
-    if 'minimum' in block:
-        minimum = validate_minimum_or_maximum_property('minimum', path, block['minimum'], errors)
-
-    maximum = None
-    if 'maximum' in block:
-        maximum = validate_minimum_or_maximum_property('maximum', path, block['maximum'], errors)
-
-    if minimum and maximum:
-        if maximum[1] < minimum[1]:
-            error = ValidationError(path, "minimum must be lower than maximum")
-            errors.append(error)
-
 def validate_enum_type(path, block, errors, warnings):
     values = block.get('values')
     if values is None:
@@ -276,13 +262,12 @@ def validate_enum_type(path, block, errors, warnings):
 
 validators = {
     "flag"     : (validate_flag_type,     []),
-    "integer"  : (validate_integer_type,  ['minimum', 'maximum']),
+    "number"   : (validate_number_type,   ['minimum', 'maximum']),
     "string"   : (validate_string_type,   ['length', 'pattern']),
     "array"    : (validate_array_type,    ['value', 'length']),
     "object"   : (validate_object_type,   ['key', 'value', 'length']),
     "tuple"    : (validate_tuple_type,    ['items']),
     "map"      : (validate_map_type,      ['fields']),
-    "decimal"  : (validate_decimal_type,  ['minimum', 'maximum']),
     "enum"     : (validate_enum_type,     ['values'])
 }
 
