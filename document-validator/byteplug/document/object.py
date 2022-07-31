@@ -8,8 +8,8 @@
 
 import re
 import json
-from byteplug.document.utils import read_minimum_value, read_maximum_value
-from byteplug.document.utils import check_length
+from byteplug.document.utility import read_minimum_value, read_maximum_value
+from byteplug.document.utility import check_length
 from byteplug.document.exception import ValidationError
 
 # Notes:
