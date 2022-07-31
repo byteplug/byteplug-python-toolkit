@@ -292,7 +292,7 @@ adjust_node_map = {
 def adjust_node(path, node, specs, errors, warnings):
     optional = specs.get('option', False)
     if not optional and node is None:
-        error = ValueError(path, "value cant be null")
+        error = ValidationError(path, "value cant be null")
         errors.append(error)
         return
     elif optional and node is None:
