@@ -84,30 +84,7 @@ def process_string_node(path, node, specs, errors, warnings):
     node_errors = []
 
     length = specs.get('length')
-    if length is not None:
-        if type(length) in (int, float):
-            length = int(length)
-
-            if len(node) != length:
-                error = ValidationError(path, f"length must be equal to {length}")
-                node_errors.append(error)
-        else:
-            minimum = length.get("minimum")
-            maximum = length.get("maximum")
-
-            if minimum is not None:
-                minimum = int(minimum)
-
-                if not (len(node) >= minimum):
-                    error = ValidationError(path, f"length must be equal or greater than {minimum}")
-                    node_errors.append(error)
-
-            if maximum is not None:
-                maximum = int(maximum)
-
-                if not (len(node) <= maximum):
-                    error = ValidationError(path, f"length must be equal or lower than {maximum}")
-                    node_errors.append(error)
+    check_length(len(node), length, path, errors, warnings)
 
     pattern = specs.get('pattern')
     if pattern is not None:
