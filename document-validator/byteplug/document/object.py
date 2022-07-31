@@ -168,7 +168,7 @@ def process_tuple_node(path, node, specs, errors, warnings):
 
     adjusted_node = []
     for (index, item) in enumerate(node):
-        adjusted_item = adjust_node(path + ['(' + str(index) + ')'], item, items[index], errors, warnings)
+        adjusted_item = adjust_node(path + ['<' + str(index) + '>'], item, items[index], errors, warnings)
         adjusted_node.append(adjusted_item)
 
     return adjusted_node
@@ -192,7 +192,7 @@ def process_map_node(path, node, specs, errors, warnings):
     adjusted_node = {}
     for key, value in node.items():
         if key in fields.keys():
-            adjusted_node[key] = adjust_node(path + ['{' + key + '}'], value, fields[key], errors, warnings)
+            adjusted_node[key] = adjust_node(path + ['$' + key], value, fields[key], errors, warnings)
         else:
             error = ValidationError(path, f"'{key}' field was unexpected")
             errors.append(error)

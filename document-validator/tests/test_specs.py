@@ -554,12 +554,12 @@ def test_tuple_type():
     for value in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e:
             validate_specs({'type': 'tuple', 'items': [value]})
-        assert e.value.path == ["(0)"]
+        assert e.value.path == ["<0>"]
         assert e.value.message == "value must be a dict"
 
     with pytest.raises(ValidationError) as e:
         validate_specs({'type': 'tuple', 'items': [{'type': 'foo'}]})
-    assert e.value.path == ["(0)"]
+    assert e.value.path == ["<0>"]
     assert e.value.message == "value of 'type' is incorrect"
 
     # test the 'option' property
@@ -607,11 +607,11 @@ def test_tuple_type():
 
     assert errors[0].path == []
     assert errors[0].message == "'foo' property is unexpected"
-    assert errors[1].path == ["(0)"]
+    assert errors[1].path == ["<0>"]
     assert errors[1].message == "value of 'type' is incorrect"
-    assert errors[2].path == ["(1)"]
+    assert errors[2].path == ["<1>"]
     assert errors[2].message == "value of 'type' is incorrect"
-    assert errors[3].path == ["(2)"]
+    assert errors[3].path == ["<2>"]
     assert errors[3].message == "value of 'type' is incorrect"
     assert errors[4].path == ["option"]
     assert errors[4].message == "value must be a bool"
@@ -658,12 +658,12 @@ def test_map_type():
     for value in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e:
             validate_specs({'type': 'map', 'fields': {'foo': value}})
-        assert e.value.path == ["{foo}"]
+        assert e.value.path == ["$foo"]
         assert e.value.message == "value must be a dict"
 
     with pytest.raises(ValidationError) as e:
         validate_specs({'type': 'map', 'fields': {'foo': {'type': 'bar'}}})
-    assert e.value.path == ["{foo}"]
+    assert e.value.path == ["$foo"]
     assert e.value.message == "value of 'type' is incorrect"
 
     # test the 'option' property
@@ -711,7 +711,7 @@ def test_map_type():
     assert errors[0].message == "'foo' property is unexpected"
     assert errors[1].path == ["fields"]
     assert errors[1].message == "'-foo' is an incorrect key name"
-    assert errors[2].path == ["{bar}"]
+    assert errors[2].path == ["$bar"]
     assert errors[2].message == "value of 'type' is incorrect"
     assert errors[3].path == ["option"]
     assert errors[3].message == "value must be a bool"

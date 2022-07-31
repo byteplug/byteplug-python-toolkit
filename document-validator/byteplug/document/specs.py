@@ -201,7 +201,7 @@ def validate_tuple_type(path, block, errors, warnings):
         return
 
     for (index, value) in enumerate(items):
-        validate_block(path + ['(' + str(index) + ')'], value, errors, warnings)
+        validate_block(path + ['<' + str(index) + '>'], value, errors, warnings)
 
 def validate_map_type(path, block, errors, warnings):
     fields = block.get("fields")
@@ -226,7 +226,7 @@ def validate_map_type(path, block, errors, warnings):
             errors.append(error)
             continue
 
-        validate_block(path + ['{' + key + '}'], value, errors, warnings)
+        validate_block(path + ['$' + key], value, errors, warnings)
 
 def validate_decimal_type(path, block, errors, warnings):
     minimum = None

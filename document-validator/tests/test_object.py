@@ -455,11 +455,11 @@ def test_tuple_type():
     # test lazy validation
     errors = []
     object_to_document(("foo", True, 42), specs, errors=errors)
-    assert errors[0].path == ["(0)"]
+    assert errors[0].path == ["<0>"]
     assert errors[0].message == "was expecting a boolean"
-    assert errors[1].path == ["(1)"]
+    assert errors[1].path == ["<1>"]
     assert errors[1].message == "was expecting an integer"
-    assert errors[2].path == ["(2)"]
+    assert errors[2].path == ["<2>"]
     assert errors[2].message == "was expecting a string"
 
 def test_map_type():
@@ -542,11 +542,11 @@ def test_map_type():
         "quz": 42
     }
     object_to_document(value, specs, errors=errors)
-    assert errors[0].path == ["{foo}"]
+    assert errors[0].path == ["$foo"]
     assert errors[0].message == "was expecting a boolean"
-    assert errors[1].path == ["{bar}"]
+    assert errors[1].path == ["$bar"]
     assert errors[1].message == "was expecting an integer"
-    assert errors[2].path == ["{quz}"]
+    assert errors[2].path == ["$quz"]
     assert errors[2].message == "was expecting a string"
 
 def test_decimal_type():
