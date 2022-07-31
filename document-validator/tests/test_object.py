@@ -432,7 +432,7 @@ def test_object_type():
 def test_tuple_type():
     specs = {
         'type': 'tuple',
-        'values': [
+        'items': [
             {'type': 'flag'},
             {'type': 'integer'},
             {'type': 'string'}

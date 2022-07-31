@@ -525,7 +525,7 @@ def test_tuple_type():
     # test minimal specs
     specs = {
         'type': 'tuple',
-        'values': [
+        'items': [
             {'type': 'flag'},
             {'type': 'integer'},
             {'type': 'string'}
@@ -533,32 +533,32 @@ def test_tuple_type():
     }
 
     validate_specs(specs)
-    missing_property_test({'type': 'tuple'}, 'values')
+    missing_property_test({'type': 'tuple'}, 'items')
 
     # test 'name' and 'description' properties
     name_property_test(specs)
     description_property_test(specs)
 
-    # test the 'values' property
-    for values in [False, True, 42, "Hello world!"]:
+    # test the 'items' property
+    for items in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e:
-            validate_specs({'type': 'tuple', 'values': values})
-        assert e.value.path == ["values"]
+            validate_specs({'type': 'tuple', 'items': items})
+        assert e.value.path == ["items"]
         assert e.value.message == "value must be a list"
 
     with pytest.raises(ValidationError) as e:
-        validate_specs({'type': 'tuple', 'values': []})
-    assert e.value.path == ["values"]
+        validate_specs({'type': 'tuple', 'items': []})
+    assert e.value.path == ["items"]
     assert e.value.message == "must contain at least one value"
 
     for value in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e:
-            validate_specs({'type': 'tuple', 'values': [value]})
+            validate_specs({'type': 'tuple', 'items': [value]})
         assert e.value.path == ["(0)"]
         assert e.value.message == "value must be a dict"
 
     with pytest.raises(ValidationError) as e:
-        validate_specs({'type': 'tuple', 'values': [{'type': 'foo'}]})
+        validate_specs({'type': 'tuple', 'items': [{'type': 'foo'}]})
     assert e.value.path == ["(0)"]
     assert e.value.message == "value of 'type' is incorrect"
 
@@ -571,13 +571,13 @@ def test_tuple_type():
     # test nested tuples
     nested_tuples = {
         'type': 'tuple',
-        'values': [
+        'items': [
             {
                 'type': 'tuple',
-                'values': [
+                'items': [
                     {
                         'type': 'tuple',
-                        'values': [
+                        'items': [
                             {
                                 'type': 'string'
                             }
@@ -592,7 +592,7 @@ def test_tuple_type():
     # test lazy validation
     specs = {
         'type': 'tuple',
-        'values': [
+        'items': [
             {'type': 'foo'},
             {'type': 'bar'},
             {'type': 'quz'}

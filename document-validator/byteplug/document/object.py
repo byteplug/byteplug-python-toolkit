@@ -177,21 +177,21 @@ def process_object_node(path, node, specs, errors, warnings):
     return adjusted_node
 
 def process_tuple_node(path, node, specs, errors, warnings):
-    values = specs['values']
+    items = specs['items']
 
     if type(node) is not tuple:
         error = ValidationError(path, "was expecting a tuple")
         errors.append(error)
         return
 
-    if len(node) != len(values):
-        error = ValidationError(path, f"length of the tuple must be {len(values)}")
+    if len(node) != len(items):
+        error = ValidationError(path, f"length of the tuple must be {len(items)}")
         errors.append(error)
         return
 
     adjusted_node = []
     for (index, item) in enumerate(node):
-        adjusted_item = adjust_node(path + ['(' + str(index) + ')'], item, values[index], errors, warnings)
+        adjusted_item = adjust_node(path + ['(' + str(index) + ')'], item, items[index], errors, warnings)
         adjusted_node.append(adjusted_item)
 
     return adjusted_node

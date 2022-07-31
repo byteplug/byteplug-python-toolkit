@@ -184,23 +184,23 @@ def validate_object_type(path, block, errors, warnings):
         validate_length_property(path, block['length'], errors, warnings)
 
 def validate_tuple_type(path, block, errors, warnings):
-    values = block.get('values')
-    if values == None:
-        error = ValidationError(path, "'values' property is missing")
+    items = block.get('items')
+    if items == None:
+        error = ValidationError(path, "'items' property is missing")
         errors.append(error)
         return
 
-    if type(values) is not list:
-        error = ValidationError(path + ['values'], "value must be a list")
+    if type(items) is not list:
+        error = ValidationError(path + ['items'], "value must be a list")
         errors.append(error)
         return
 
-    if len(values) == 0:
-        error = ValidationError(path + ['values'], "must contain at least one value")
+    if len(items) == 0:
+        error = ValidationError(path + ['items'], "must contain at least one value")
         errors.append(error)
         return
 
-    for (index, value) in enumerate(values):
+    for (index, value) in enumerate(items):
         validate_block(path + ['(' + str(index) + ')'], value, errors, warnings)
 
 def validate_map_type(path, block, errors, warnings):
@@ -280,7 +280,7 @@ validators = {
     "string"   : (validate_string_type,   ['length', 'pattern']),
     "array"    : (validate_array_type,    ['value', 'length']),
     "object"   : (validate_object_type,   ['key', 'value', 'length']),
-    "tuple"    : (validate_tuple_type,    ['values']),
+    "tuple"    : (validate_tuple_type,    ['items']),
     "map"      : (validate_map_type,      ['fields']),
     "decimal"  : (validate_decimal_type,  ['minimum', 'maximum']),
     "enum"     : (validate_enum_type,     ['values'])
