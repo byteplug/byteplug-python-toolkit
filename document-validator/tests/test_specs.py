@@ -73,6 +73,64 @@ def string_value_property_test(specs, key, path):
     assert e.value.path == path + [key]
     assert e.value.message == f"value must be a string"
 
+def name_property_test(specs):
+    # validate_specs(specs | {'foo': 'bar', 'bar': 'foo'})
+    string_value_property_test(specs, "name", [])
+
+def description_property_test(specs):
+    string_value_property_test(specs, "description", [])
+
+def length_property_test(specs):
+    validate_specs(specs | {'length': 42})
+
+    validate_specs(specs | {'length': {'minimum': 42}})
+    validate_specs(specs | {'length': {'maximum': 42}})
+    validate_specs(specs | {'length': {'minimum': 0, 'maximum': 42}})
+
+    with pytest.raises(ValidationError) as e:
+        validate_specs(specs | {'length': -1})
+    assert e.value.path == ["length"]
+    assert e.value.message == "must be greater or equal to zero"
+
+    warnings = []
+    validate_specs(specs | {'length': 42.5}, warnings=warnings)
+    assert len(warnings) == 1
+    assert warnings[0].path == ["length"]
+    assert warnings[0].message == "should be an integer (got float)"
+
+    with pytest.raises(ValidationError) as e:
+        validate_specs(specs | {'length': {'minimum': -1}})
+    assert e.value.path == ["length", "minimum"]
+    assert e.value.message == "must be greater or equal to zero"
+
+    warnings = []
+    validate_specs(specs | {'length': {'minimum': 42.5}}, warnings=warnings)
+    assert len(warnings) == 1
+    assert warnings[0].path == ["length"]
+    assert warnings[0].message == "should be an integer (got float)"
+
+    with pytest.raises(ValidationError) as e:
+        validate_specs(specs | {'length': {'maximum': -1}})
+    assert e.value.path == ["length", "maximum"]
+    assert e.value.message == "must be greater or equal to zero"
+
+    warnings = []
+    validate_specs(specs | {'length': {'maximum': 42.5}}, warnings=warnings)
+    assert len(warnings) == 1
+    assert warnings[0].path == ["length"]
+    assert warnings[0].message == "should be an integer (got float)"
+
+    for minimum, maximum in ((42, 0), (1, 0)):
+        with pytest.raises(ValidationError) as e:
+            validate_specs(specs | {'length': {'minimum': minimum, 'maximum': maximum}})
+        assert e.value.path == ["length"]
+        assert e.value.message == "minimum must be lower than maximum"
+
+    with pytest.raises(ValidationError) as e:
+        validate_specs(specs | {'length': {'foo': 'bar'}})
+    assert e.value.path == ["length"]
+    assert e.value.message == "'foo' property is unexpected"
+
 def option_property_test(specs, path):
     bool_value_property_test(specs, "option", path)
 
@@ -84,13 +142,6 @@ def additional_properties_test(specs):
     assert errors[0].message == "'bar' property is unexpected"
     assert errors[1].path == []
     assert errors[1].message == "'foo' property is unexpected"
-
-def name_property_test(specs):
-    # validate_specs(specs | {'foo': 'bar', 'bar': 'foo'})
-    string_value_property_test(specs, "name", [])
-
-def description_property_test(specs):
-    string_value_property_test(specs, "description", [])
 
 def test_type_block():
     # type blocks must be a dict
@@ -272,55 +323,7 @@ def test_string_type():
     description_property_test(specs)
 
     # test the 'length' property
-    validate_specs(specs | {'length': 42})
-
-    validate_specs(specs | {'length': {'minimum': 42}})
-    validate_specs(specs | {'length': {'maximum': 42}})
-    validate_specs(specs | {'length': {'minimum': 0, 'maximum': 42}})
-
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'length': -1})
-    assert e.value.path == ["length"]
-    assert e.value.message == "must be greater or equal to zero"
-
-    warnings = []
-    validate_specs(specs | {'length': 42.5}, warnings=warnings)
-    assert len(warnings) == 1
-    assert warnings[0].path == ["length"]
-    assert warnings[0].message == "should be an integer (got float)"
-
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'length': {'minimum': -1}})
-    assert e.value.path == ["length", "minimum"]
-    assert e.value.message == "must be greater or equal to zero"
-
-    warnings = []
-    validate_specs(specs | {'length': {'minimum': 42.5}}, warnings=warnings)
-    assert len(warnings) == 1
-    assert warnings[0].path == ["length"]
-    assert warnings[0].message == "should be an integer (got float)"
-
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'length': {'maximum': -1}})
-    assert e.value.path == ["length", "maximum"]
-    assert e.value.message == "must be greater or equal to zero"
-
-    warnings = []
-    validate_specs(specs | {'length': {'maximum': 42.5}}, warnings=warnings)
-    assert len(warnings) == 1
-    assert warnings[0].path == ["length"]
-    assert warnings[0].message == "should be an integer (got float)"
-
-    for minimum, maximum in ((42, 0), (1, 0)):
-        with pytest.raises(ValidationError) as e:
-            validate_specs(specs | {'length': {'minimum': minimum, 'maximum': maximum}})
-        assert e.value.path == ["length"]
-        assert e.value.message == "minimum must be lower than maximum"
-
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'length': {'foo': 'bar'}})
-    assert e.value.path == ["length"]
-    assert e.value.message == "'foo' property is unexpected"
+    length_property_test(specs)
 
     # test the 'pattern' property
     validate_specs(specs | {'pattern': '^[a-z]+(-[a-z]+)*$'})
@@ -377,55 +380,7 @@ def test_list_type():
     assert e.value.message == "value of 'type' is incorrect"
 
     # test the 'length' property
-    validate_specs(specs | {'length': 42})
-
-    validate_specs(specs | {'length': {'minimum': 42}})
-    validate_specs(specs | {'length': {'maximum': 42}})
-    validate_specs(specs | {'length': {'minimum': 0, 'maximum': 42}})
-
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'length': -1})
-    assert e.value.path == ["length"]
-    assert e.value.message == "must be greater or equal to zero"
-
-    warnings = []
-    validate_specs(specs | {'length': 42.5}, warnings=warnings)
-    assert len(warnings) == 1
-    assert warnings[0].path == ["length"]
-    assert warnings[0].message == "should be an integer (got float)"
-
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'length': {'minimum': -1}})
-    assert e.value.path == ["length", "minimum"]
-    assert e.value.message == "must be greater or equal to zero"
-
-    warnings = []
-    validate_specs(specs | {'length': {'minimum': 42.5}}, warnings=warnings)
-    assert len(warnings) == 1
-    assert warnings[0].path == ["length"]
-    assert warnings[0].message == "should be an integer (got float)"
-
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'length': {'maximum': -1}})
-    assert e.value.path == ["length", "maximum"]
-    assert e.value.message == "must be greater or equal to zero"
-
-    warnings = []
-    validate_specs(specs | {'length': {'maximum': 42.5}}, warnings=warnings)
-    assert len(warnings) == 1
-    assert warnings[0].path == ["length"]
-    assert warnings[0].message == "should be an integer (got float)"
-
-    for minimum, maximum in ((42, 0), (1, 0)):
-        with pytest.raises(ValidationError) as e:
-            validate_specs(specs | {'length': {'minimum': minimum, 'maximum': maximum}})
-        assert e.value.path == ["length"]
-        assert e.value.message == "minimum must be lower than maximum"
-
-    with pytest.raises(ValidationError) as e:
-        validate_specs(specs | {'length': {'foo': 'bar'}})
-    assert e.value.path == ["length"]
-    assert e.value.message == "'foo' property is unexpected"
+    length_property_test(specs)
 
     # test the 'option' property
     option_property_test(specs, [])
