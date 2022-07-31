@@ -73,6 +73,12 @@ def string_value_property_test(specs, key, path):
     assert e.value.path == path + [key]
     assert e.value.message == f"value must be a string"
 
+def missing_property_test(specs, property):
+    with pytest.raises(ValidationError) as e:
+        validate_specs(specs)
+    assert e.value.path == []
+    assert e.value.message == f"'{property}' property is missing"
+
 def name_property_test(specs):
     # validate_specs(specs | {'foo': 'bar', 'bar': 'foo'})
     string_value_property_test(specs, "name", [])
@@ -151,9 +157,7 @@ def test_type_block():
         assert e.value.message == "value must be a dict"
 
     # 'type' property is missing
-    with pytest.raises(ValidationError) as e:
-        validate_specs({})
-    assert e.value.message == "'type' property is missing"
+    missing_property_test({}, 'type')
 
     # value of 'type' property is incorrect
     with pytest.raises(ValidationError) as e:
@@ -360,10 +364,7 @@ def test_list_type():
     # test minimal specs
     specs = {'type': 'list', 'value': {'type': 'string'}}
 
-    with pytest.raises(ValidationError) as e:
-        validate_specs({'type': 'list'})
-    assert e.value.path == []
-    assert e.value.message == "'value' property is missing"
+    missing_property_test({'type': 'list'}, 'value')
 
     validate_specs({'type': 'list', 'value': {'type': 'flag'}})
     validate_specs({'type': 'list', 'value': {'type': 'integer'}})
@@ -436,12 +437,8 @@ def test_tuple_type():
         ]
     }
 
-    with pytest.raises(ValidationError) as e:
-        validate_specs({'type': 'tuple'})
-    assert e.value.path == []
-    assert e.value.message == "'values' property is missing"
-
     validate_specs(specs)
+    missing_property_test({'type': 'tuple'}, 'values')
 
     # test 'name' and 'description' properties
     name_property_test(specs)
@@ -535,12 +532,8 @@ def test_map_type():
         }
     }
 
-    with pytest.raises(ValidationError) as e:
-        validate_specs({'type': 'map'})
-    assert e.value.path == []
-    assert e.value.message == "'fields' property is missing"
-
     validate_specs(specs)
+    missing_property_test({'type': 'map'}, 'fields')
 
     # test 'name' and 'description' properties
     name_property_test(specs)
