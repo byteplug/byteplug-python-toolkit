@@ -6,6 +6,8 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
+from byteplug.document.exception import ValidationError
+
 def read_minimum_value(specs):
     assert specs['type'] in ('integer', 'decimal')
 
@@ -29,3 +31,32 @@ def read_maximum_value(specs):
             exclusive = maximum.get('exclusive', False)
             value = maximum['value']
             return (exclusive, value)
+
+def check_length(value, length, path, errors, warnings):
+    if length is not None:
+        if type(length) in (int, float):
+            length = int(length)
+
+            if value != length:
+                error = ValidationError(path, f"length must be equal to {length}")
+                errors.append(error)
+                return
+        else:
+            minimum = length.get("minimum")
+            maximum = length.get("maximum")
+
+            if minimum is not None:
+                minimum = int(minimum)
+
+                if not (value >= minimum):
+                    error = ValidationError(path, f"length must be equal or greater than {minimum}")
+                    errors.append(error)
+                    return
+
+            if maximum is not None:
+                maximum = int(maximum)
+
+                if not (value <= maximum):
+                    error = ValidationError(path, f"length must be equal or lower than {maximum}")
+                    errors.append(error)
+                    return

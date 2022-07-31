@@ -14,6 +14,19 @@ import pytest
 # - Keep this file in sync with test_document.py
 #
 
+VALID_NAMES = [
+    "foobar",
+    "foo-bar"
+]
+
+INVALID_NAMES = [
+    "Foobar",
+    "foo_bar",
+    "-foobar",
+    "barfoo-",
+    "foo--bar"
+]
+
 def test_flag_type():
     specs = {'type': 'flag'}
 
@@ -225,8 +238,8 @@ def test_string_type():
     assert errors[1].path == []
     assert errors[1].message == "value did not match the pattern"
 
-def test_list_type():
-    specs = {'type': 'list', 'value': {'type': 'string'}}
+def test_array_type():
+    specs = {'type': 'array', 'value': {'type': 'string'}}
 
     for value in [False, True, 42, 42.0, "Hello world!", (), {}]:
         with pytest.raises(ValidationError) as e:
@@ -234,21 +247,21 @@ def test_list_type():
         assert e.value.path == []
         assert e.value.message == "was expecting a list"
 
-    specs = {'type': 'list', 'value': {'type': 'flag'}}
+    specs = {'type': 'array', 'value': {'type': 'flag'}}
     document = object_to_document([True, False, True], specs)
     assert document == '[true, false, true]'
 
-    specs = {'type': 'list', 'value': {'type': 'integer'}}
+    specs = {'type': 'array', 'value': {'type': 'integer'}}
     document = object_to_document([10, 42, 100], specs)
     assert document == '[10, 42, 100]'
 
-    specs = {'type': 'list', 'value': {'type': 'string'}}
+    specs = {'type': 'array', 'value': {'type': 'string'}}
     document = object_to_document(["foo", "bar", "quz"], specs)
     assert document == '["foo", "bar", "quz"]'
 
-    # test if list is being checked against length value
+    # test if array items are being checked against length value
     specs = {
-        'type': 'list',
+        'type': 'array',
         'value': {'type': 'string'},
         'length': 2
     }
@@ -266,7 +279,7 @@ def test_list_type():
     assert e.value.message == "length must be equal to 2"
 
     specs = {
-        'type': 'list',
+        'type': 'array',
         'value': {'type': 'string'},
         'length': {
             'minimum': 2
@@ -280,7 +293,7 @@ def test_list_type():
     assert e.value.message == "length must be equal or greater than 2"
 
     specs = {
-        'type': 'list',
+        'type': 'array',
         'value': {'type': 'string'},
         'length': {
             'maximum': 2
@@ -295,7 +308,7 @@ def test_list_type():
 
     # test lazy validation
     specs = {
-        'type': 'list',
+        'type': 'array',
         'value': {'type': 'integer'},
     }
 
@@ -305,6 +318,115 @@ def test_list_type():
     assert errors[0].path == ["[0]"]
     assert errors[0].message == "was expecting an integer"
     assert errors[1].path == ["[2]"]
+    assert errors[1].message == "was expecting an integer"
+
+def test_object_type():
+    specs = {
+        'type': 'object',
+        'key': 'string',
+        'value': {
+            'type': 'string'
+        }
+    }
+
+    for value in [False, True, 42, 42.0, "Hello world!", [], ()]:
+        with pytest.raises(ValidationError) as e:
+            object_to_document(value, specs)
+        assert e.value.path == []
+        assert e.value.message == "was expecting a dict"
+
+    # test with key set to 'integer'
+    specs = {'type': 'object', 'key': 'integer', 'value': {'type': 'string'}}
+
+    document = object_to_document({1: "foo", 2: "bar", 3: "quz"}, specs)
+    assert document == '{"1": "foo", "2": "bar", "3": "quz"}'
+
+    with pytest.raises(ValidationError) as e:
+        object_to_document({1: "foo", 2.5: "bar", 3: "quz"}, specs)
+    assert e.value.path == []
+    assert e.value.message == "key at index 1 is invalid; expected it to be an integer"
+
+    with pytest.raises(ValidationError) as e:
+        object_to_document({1: "foo", "bar": "bar", 3: "quz"}, specs)
+    assert e.value.path == []
+    assert e.value.message == "key at index 1 is invalid; expected it to be an integer"
+
+    # test with key set to 'string'
+    specs = {'type': 'object', 'key': 'string', 'value': {'type': 'integer'}}
+
+    for name in VALID_NAMES:
+        document = object_to_document({'foo': 10, name: 42, 'quz': 100}, specs)
+        assert document == '{"foo": 10, "name": 42, "quz": 100}'.replace('name', name)
+
+    for name in INVALID_NAMES:
+        with pytest.raises(ValidationError) as e:
+            document = object_to_document({'foo': 10, name: 42, 'quz': 100}, specs)
+        assert e.value.path == []
+        assert e.value.message == "key at index 1 is invalid; expected to match the pattern"
+
+    # test if object items are being checked against length value
+    specs = {
+        'type': 'object',
+        'key': 'string',
+        'value': {'type': 'integer'},
+        'length': 2
+    }
+
+    object_to_document({'foo': 1, 'bar': 2}, specs)
+
+    with pytest.raises(ValidationError) as e:
+        object_to_document({'foo': 1}, specs)
+    assert e.value.path == []
+    assert e.value.message == "length must be equal to 2"
+
+    with pytest.raises(ValidationError) as e:
+        object_to_document({'foo': 1, 'bar': 2, 'quz': 3}, specs)
+    assert e.value.path == []
+    assert e.value.message == "length must be equal to 2"
+
+    specs = {
+        'type': 'object',
+        'key': 'string',
+        'value': {'type': 'integer'},
+        'length': {
+            'minimum': 2
+        }
+    }
+    object_to_document({'foo': 1, 'bar': 2}, specs)
+
+    with pytest.raises(ValidationError) as e:
+        object_to_document({'foo': 1}, specs)
+    assert e.value.path == []
+    assert e.value.message == "length must be equal or greater than 2"
+
+    specs = {
+        'type': 'object',
+        'key': 'string',
+        'value': {'type': 'integer'},
+        'length': {
+            'maximum': 2
+        }
+    }
+    object_to_document({'foo': 1, 'bar': 2}, specs)
+
+    with pytest.raises(ValidationError) as e:
+        object_to_document({'foo': 1, 'bar': 2, 'quz': 3}, specs)
+    assert e.value.path == []
+    assert e.value.message == "length must be equal or lower than 2"
+
+    # test lazy validation
+    specs = {
+        'type': 'object',
+        'key': 'string',
+        'value': {'type': 'integer'},
+    }
+
+    errors = []
+    object_to_document({'foo': True, 'bar': 42, 'quz': "Hello world!"}, specs, errors=errors)
+
+    assert errors[0].path == ["{foo}"]
+    assert errors[0].message == "was expecting an integer"
+    assert errors[1].path == ["{quz}"]
     assert errors[1].message == "was expecting an integer"
 
 def test_tuple_type():

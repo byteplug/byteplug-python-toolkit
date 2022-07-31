@@ -9,6 +9,7 @@
 import re
 import json
 from byteplug.document.utils import read_minimum_value, read_maximum_value
+from byteplug.document.utils import check_length
 from byteplug.document.exception import ValidationError
 
 # Notes:
@@ -120,7 +121,7 @@ def process_string_node(path, node, specs, errors, warnings):
 
     return node
 
-def process_list_node(path, node, specs, errors, warnings):
+def process_array_node(path, node, specs, errors, warnings):
     value = specs['value']
 
     if type(node) is not list:
@@ -129,38 +130,49 @@ def process_list_node(path, node, specs, errors, warnings):
         return
 
     length = specs.get('length')
-    if length is not None:
-        if type(length) in (int, float):
-            length = int(length)
-
-            if len(node) != length:
-                error = ValidationError(path, f"length must be equal to {length}")
-                errors.append(error)
-                return
-        else:
-            minimum = length.get("minimum")
-            maximum = length.get("maximum")
-
-            if minimum is not None:
-                minimum = int(minimum)
-
-                if not (len(node) >= minimum):
-                    error = ValidationError(path, f"length must be equal or greater than {minimum}")
-                    errors.append(error)
-                    return
-
-            if maximum is not None:
-                maximum = int(maximum)
-
-                if not (len(node) <= maximum):
-                    error = ValidationError(path, f"length must be equal or lower than {maximum}")
-                    errors.append(error)
-                    return
+    check_length(len(node), length, path, errors, warnings)
 
     adjusted_node = []
     for (index, item) in enumerate(node):
         adjusted_item = adjust_node(path + ['[' + str(index) + ']'], item, value, errors, warnings)
         adjusted_node.append(adjusted_item)
+
+    return adjusted_node
+
+def process_object_node(path, node, specs, errors, warnings):
+    key = specs['key']
+    value = specs['value']
+
+    if type(node) is not dict:
+        error = ValidationError(path, "was expecting a dict")
+        errors.append(error)
+        return
+
+    length = specs.get('length')
+    check_length(len(node), length, path, errors, warnings)
+
+    adjusted_node = {}
+    for (index, item) in enumerate(node.items()):
+        if key == 'integer':
+            if type(item[0]) is not int:
+                error = ValidationError(path, f"key at index {index} is invalid; expected it to be an integer")
+                errors.append(error)
+                continue
+
+            node_key = str(item[0])
+
+        elif key == 'string':
+            # Keys are restricted by a given pattern; check value against it.
+            # If it doesn't pass the test, the JSON document is invalid.
+            if not re.match(r"^[a-z]+(-[a-z]+)*$", item[0]):
+                error = ValidationError(path, f"key at index {index} is invalid; expected to match the pattern")
+                errors.append(error)
+                continue
+
+            node_key = item[0]
+
+        adjusted_value = adjust_node(path + ['{' + str(item[0]) + '}'], item[1], value, errors, warnings)
+        adjusted_node[node_key] = adjusted_value
 
     return adjusted_node
 
@@ -282,7 +294,8 @@ adjust_node_map = {
     'flag'   : process_flag_node,
     'integer': process_integer_node,
     'string' : process_string_node,
-    'list'   : process_list_node,
+    'array'  : process_array_node,
+    'object' : process_object_node,
     'tuple'  : process_tuple_node,
     'map'    : process_map_node,
     'decimal': process_decimal_node,

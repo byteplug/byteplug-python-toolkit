@@ -23,6 +23,11 @@ INVALID_NAMES = [
     "foo--bar"
 ]
 
+def dict_minus_item(a, key):
+    b = a.copy()
+    b.pop(key)
+    return b
+
 def bool_value_property_test(specs, key, path):
     validate_specs(specs | {key: True})
     validate_specs(specs | {key: False})
@@ -360,14 +365,19 @@ def test_string_type():
     assert errors[3].path == ["option"]
     assert errors[3].message == "value must be a bool"
 
-def test_list_type():
+def test_array_type():
     # test minimal specs
-    specs = {'type': 'list', 'value': {'type': 'string'}}
+    specs = {
+        'type': 'array',
+        'value':
+            {'type': 'string'
+        }
+    }
 
-    missing_property_test({'type': 'list'}, 'value')
+    missing_property_test({'type': 'array'}, 'value')
 
-    validate_specs({'type': 'list', 'value': {'type': 'flag'}})
-    validate_specs({'type': 'list', 'value': {'type': 'integer'}})
+    validate_specs({'type': 'array', 'value': {'type': 'flag'}})
+    validate_specs({'type': 'array', 'value': {'type': 'integer'}})
     validate_specs(specs)
 
     # test 'name' and 'description' properties
@@ -376,7 +386,7 @@ def test_list_type():
 
     # test the 'value' property
     with pytest.raises(ValidationError) as e:
-        validate_specs({'type': 'list', 'value': {'type': 'foo'}})
+        validate_specs({'type': 'array', 'value': {'type': 'foo'}})
     assert e.value.path == ["[]"]
     assert e.value.message == "value of 'type' is incorrect"
 
@@ -389,24 +399,24 @@ def test_list_type():
     # test additional properties
     additional_properties_test(specs)
 
-    # test nested lists
-    nested_lists = {
-        'type': 'list',
+    # test nested arrays
+    nested_arrays = {
+        'type': 'array',
         'value': {
-            'type': 'list',
+            'type': 'array',
             'value': {
-                'type': 'list',
+                'type': 'array',
                 'value': {
                     'type': 'string'
                 }
             }
         }
     }
-    validate_specs(nested_lists)
+    validate_specs(nested_arrays)
 
     # test lazy validation
     specs = {
-        'type': 'list',
+        'type': 'array',
         'value': 42,
         'length': False,
         'option': 42,
@@ -425,6 +435,91 @@ def test_list_type():
     assert errors[2].message == "value must be either a number or a dict"
     assert errors[3].path == ["option"]
     assert errors[3].message == "value must be a bool"
+
+def test_object_type():
+    # test minimal specs
+    specs = {
+        'type': 'object',
+        'key': 'string',
+        'value': {
+            'type': 'string'
+        }
+    }
+
+    missing_property_test(dict_minus_item(specs, 'key'), 'key')
+    missing_property_test(dict_minus_item(specs, 'value'), 'value')
+
+    validate_specs(specs)
+
+    # test 'name' and 'description' properties
+    name_property_test(specs)
+    description_property_test(specs)
+
+    # test the 'key' property
+    for key in ['integer', 'string']:
+        validate_specs({'type': 'object', 'key': key, 'value': {'type': 'string'}})
+
+    with pytest.raises(ValidationError) as e:
+        validate_specs({'type': 'object', 'key': 'foo', 'value': {'type': 'string'}})
+    assert e.value.path == []
+    assert e.value.message == "value of 'key' must be either 'integer' or 'string'"
+
+    # test the 'value' property
+    with pytest.raises(ValidationError) as e:
+        validate_specs({'type': 'object', 'key': 'string', 'value': {'type': 'foo'}})
+    assert e.value.path == ["{}"]
+    assert e.value.message == "value of 'type' is incorrect"
+
+    # test the 'length' property
+    length_property_test(specs)
+
+    # test the 'option' property
+    option_property_test(specs, [])
+
+    # test additional properties
+    additional_properties_test(specs)
+
+    # test nested objects
+    nested_objects = {
+        'type': 'object',
+        'key': 'integer',
+        'value': {
+            'type': 'object',
+            'key': 'string',
+            'value': {
+                'type': 'object',
+                'key': 'integer',
+                'value': {
+                    'type': 'string'
+                }
+            }
+        }
+    }
+    validate_specs(nested_objects)
+
+    # test lazy validation
+    specs = {
+        'type': 'object',
+        'key': 'foo',
+        'value': 42,
+        'length': False,
+        'option': 42,
+        'foo': 'br'
+    }
+
+    errors = []
+    validate_specs(specs, errors=errors)
+
+    assert errors[0].path == []
+    assert errors[0].message == "'foo' property is unexpected"
+    assert errors[1].path == ["{}"]
+    assert errors[1].message == "value must be a dict"
+    assert errors[2].path == []
+    assert errors[2].message == "value of 'key' must be either 'integer' or 'string'"
+    assert errors[3].path == ["length"]
+    assert errors[3].message == "value must be either a number or a dict"
+    assert errors[4].path == ["option"]
+    assert errors[4].message == "value must be a bool"
 
 def test_tuple_type():
     # test minimal specs

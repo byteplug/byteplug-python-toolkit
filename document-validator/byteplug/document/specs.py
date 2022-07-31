@@ -149,7 +149,7 @@ def validate_string_type(path, block, errors, warnings):
             error = ValidationError(path + ['pattern'], "value must be a string")
             errors.append(error)
 
-def validate_list_type(path, block, errors, warnings):
+def validate_array_type(path, block, errors, warnings):
     value = block.get('value')
     if not value:
         error = ValidationError(path, "'value' property is missing")
@@ -157,6 +157,28 @@ def validate_list_type(path, block, errors, warnings):
         return
 
     validate_block(path + ['[]'], value, errors, warnings)
+
+    if 'length' in block:
+        validate_length_property(path, block['length'], errors, warnings)
+
+def validate_object_type(path, block, errors, warnings):
+    key = block.get('key')
+    value = block.get('value')
+
+    if value is not None:
+        validate_block(path + ['{}'], value, errors, warnings)
+    else:
+        error = ValidationError(path, "'value' property is missing")
+        errors.append(error)
+
+    if key is not None:
+        if key not in ['string', 'integer']:
+            error = ValidationError(path, "value of 'key' must be either 'integer' or 'string'")
+            errors.append(error)
+    else:
+        error = ValidationError(path, "'key' property is missing")
+        errors.append(error)
+        return
 
     if 'length' in block:
         validate_length_property(path, block['length'], errors, warnings)
@@ -256,7 +278,8 @@ validators = {
     "flag"     : (validate_flag_type,     []),
     "integer"  : (validate_integer_type,  ['minimum', 'maximum']),
     "string"   : (validate_string_type,   ['length', 'pattern']),
-    "list"     : (validate_list_type,     ['value', 'length']),
+    "array"    : (validate_array_type,    ['value', 'length']),
+    "object"   : (validate_object_type,   ['key', 'value', 'length']),
     "tuple"    : (validate_tuple_type,    ['values']),
     "map"      : (validate_map_type,      ['fields']),
     "decimal"  : (validate_decimal_type,  ['minimum', 'maximum']),
