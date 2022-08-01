@@ -6,7 +6,7 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.document.types import *
+from byteplug.document.node import Node
 from byteplug.document.specs import validate_specs
 from byteplug.document.document import document_to_object
 from byteplug.document.object import object_to_document
