@@ -6,7 +6,7 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.document.types import *
+from byteplug.document.node import Node
 from byteplug.endpoints.endpoint import request, response, error
 from byteplug.endpoints.endpoint import endpoint, collection_endpoint
 from byteplug.endpoints.endpoints import Endpoints
@@ -16,25 +16,25 @@ def test_specs():
     # scenarios, then see how it's generating the YAML specs. Also adds some
     # records to the mix.
 
-    foobar_specs = String(pattern="foobar")
-    barfoo_specs = String(pattern="barfoo")
+    foobar_specs = Node('string', pattern="foobar")
+    barfoo_specs = Node('string', pattern="barfoo")
 
-    @request(Integer().to_object())
-    @error("error-a", Flag().to_object())
-    @error("error-b", Integer().to_object())
-    @error("error-c", String().to_object())
+    @request(Node('number'))
+    @error("error-a", Node('flag'))
+    @error("error-b", Node('number'))
+    @error("error-c", Node('string'))
     @endpoint("foo", name="Foo", description="Description of 'Foo' endpoint.")
     def foo():
         pass
 
-    @response(Integer().to_object())
+    @response(Node('number'))
     @collection_endpoint("bar", "action1", authentication=True)
     def bar():
         pass
 
-    @request(Integer().to_object())
-    @response(String().to_object())
-    @error("error-z", String().to_object(), name="Error Z", description="Description of 'Error Z' error.")
+    @request(Node('number'))
+    @response(Node('string'))
+    @error("error-z", Node('string'), name="Error Z", description="Description of 'Error Z' error.")
     @collection_endpoint("quz", "action2", operate_on_item=True)
     def quz():
         pass
@@ -99,7 +99,7 @@ def test_specs():
                 'name': "Foo",
                 'description': "Description of 'Foo' endpoint.",
                 'request': {
-                    'type': 'integer'
+                    'type': 'number'
                 },
                 'errors': {
                     'error-a': {
@@ -109,7 +109,7 @@ def test_specs():
                     },
                     'error-b': {
                         'value': {
-                            'type': 'integer'
+                            'type': 'number'
                         }
                     },
                     'error-c': {
@@ -130,7 +130,7 @@ def test_specs():
                         'operate': 'collection',
                         'authentication': True,
                         'response': {
-                            'type': 'integer'
+                            'type': 'number'
                         }
                     }
                 }
@@ -140,7 +140,7 @@ def test_specs():
                     'action2': {
                         'operate': 'item',
                         'request': {
-                            'type': 'integer'
+                            'type': 'number'
                         },
                         'response': {
                             'type': 'string'

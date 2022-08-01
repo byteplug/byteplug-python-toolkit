@@ -6,18 +6,18 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.document.types import *
+from byteplug.document.node import Node
 from byteplug.document.exception import ValidationError
 from byteplug.endpoints.endpoint import endpoint, collection_endpoint, Operate
 from byteplug.endpoints.endpoint import request, response, error
 import pytest
 
 INVALID_SPECS = {'type': 'foo'}
-VALID_SPECS = Map({
-    'foo': Flag(),
-    'bar': Integer(),
-    'quz': String()
-}).to_object()
+VALID_SPECS = Node('map', fields={
+    'foo': Node('flag'),
+    'bar': Node('number'),
+    'quz': Node('string')
+})
 
 def test_endpoint():
     """ Test the @endpoint decorator. """
@@ -97,7 +97,7 @@ def test_request():
     @endpoint("foo")
     def f(): pass
 
-    assert f.specs['request'] == VALID_SPECS
+    assert f.specs['request'] == VALID_SPECS.to_object()
 
 def test_response():
     """ Test the @response decorator. """
@@ -117,7 +117,7 @@ def test_response():
     @endpoint("foo")
     def f(): pass
 
-    assert f.specs['response'] == VALID_SPECS
+    assert f.specs['response'] == VALID_SPECS.to_object()
 
 def test_error():
     """ Test the @error decorator. """
@@ -146,7 +146,7 @@ def test_error():
         @endpoint("bar")
         def f(): pass
 
-    another_valid_specs = String().to_object()
+    another_valid_specs = Node('string')
 
     @error("foo", VALID_SPECS, name="Foo", description="Description of 'Foo' error.")
     @error("bar", another_valid_specs)
@@ -157,12 +157,12 @@ def test_error():
         'foo': {
             'name': "Foo",
             'description': "Description of 'Foo' error.",
-            'specs': VALID_SPECS
+            'specs': VALID_SPECS.to_object()
         },
         'bar': {
             'name': None,
             'description': None,
-            'specs': another_valid_specs
+            'specs': another_valid_specs.to_object()
         }
     }
 

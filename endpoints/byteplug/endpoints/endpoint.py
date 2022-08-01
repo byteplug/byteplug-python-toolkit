@@ -8,12 +8,16 @@
 
 import re
 from enum import Enum
+from byteplug.document.node import Node
 from byteplug.document.specs import validate_specs
 
 Operate = Enum('Operate', 'ITEM COLLECTION')
 
 def request(specs):
+    if type(specs) is Node:
+        specs = specs.to_object()
     validate_specs(specs)
+
     def decorator(function):
         assert "specs" in dir(function), "the @request decorator must be followed by an endpoint decorator"
         function.specs['request'] = specs
@@ -22,7 +26,10 @@ def request(specs):
     return decorator
 
 def response(specs):
+    if type(specs) is Node:
+        specs = specs.to_object()
     validate_specs(specs)
+
     def decorator(function):
         assert "specs" in dir(function), "the @response decorator must be followed by an endpoint decorator"
         function.specs['response'] = specs
@@ -33,6 +40,8 @@ def response(specs):
 def error(tag, specs=None, name=None, description=None):
     assert re.match(r"^[a-z]+(-[a-z]+)*$", tag), "invalid tag name"
     if specs:
+        if type(specs) is Node:
+            specs = specs.to_object()
         validate_specs(specs)
 
     def decorator(function):

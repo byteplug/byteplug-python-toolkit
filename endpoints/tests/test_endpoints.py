@@ -19,7 +19,7 @@ import time
 from multiprocessing import Process
 import json
 import requests
-from byteplug.document.types import *
+from byteplug.document.node import Node
 from byteplug.endpoints.endpoint import request, error
 from byteplug.endpoints.endpoint import adaptor
 from byteplug.endpoints.endpoint import endpoint, collection_endpoint
@@ -69,8 +69,8 @@ def test_endpoints():
 
     from byteplug.endpoints.endpoint import response
 
-    @request(String(pattern="foo").to_object())
-    @response(String(pattern="bar").to_object())
+    @request(Node('string', pattern="foo"))
+    @response(Node('string', pattern="bar"))
     @endpoint("foobar")
     def foobar(document):
         assert document == "foo"
@@ -93,12 +93,12 @@ def test_collections():
 
     from byteplug.endpoints.endpoint import response
 
-    @response(String(pattern="foo/bar").to_object())
+    @response(Node('string', pattern="foo/bar").to_object())
     @collection_endpoint("foo", "bar")
     def bar():
         return "foo/bar"
 
-    @response(String(pattern="foo/quz").to_object())
+    @response(Node('string', pattern="foo/quz").to_object())
     @collection_endpoint("foo", "quz", operate_on_item=True)
     def quz(item):
         assert item == "42"
@@ -142,7 +142,7 @@ def test_request():
     def foo():
         pass
 
-    @request(String().to_object())
+    @request(Node('string'))
     @endpoint("bar")
     def bar(_document):
         pass
@@ -201,7 +201,7 @@ def test_request():
         'code': 'json-body-specs-mismatch',
         'name': "The JSON body does not match the specs",
         'description': "The JSON body in the HTTP request does not match the specifications.",
-        'errors': [{'path': 'root', 'message': "was expecting a JSON string"}],
+        'errors': [{'path': '', 'message': "was expecting a JSON string"}],
         'warnings': []
     }
 
@@ -231,17 +231,17 @@ def test_response():
     def foo_with_no_response():
         pass
 
-    @response(String().to_object())
+    @response(Node('string'))
     @endpoint("bar-with-response")
     def bar_with_response():
         return "Hello world!"
 
-    @response(String().to_object())
+    @response(Node('string'))
     @endpoint("bar-with-invalid-response")
     def bar_with_invalid_response():
         return 42
 
-    @response(String().to_object())
+    @response(Node('string'))
     @endpoint("bar-with-no-response")
     def bar_with_no_response():
         pass
@@ -280,7 +280,7 @@ def test_response():
         'code': 'invalid-response-specs-mismatch',
         'name': "Invalid returned response JSON body",
         'description': "The endpoint did not return a response JSON body matching its specifications.",
-        'errors': [{'path': 'root', 'message': "was expecting a string"}],
+        'errors': [{'path': '', 'message': "was expecting a string"}],
         'warnings': []
     }
 
@@ -293,7 +293,7 @@ def test_response():
     #     'code': 'invalid-response-specs-mismatch',
     #     'name': "Invalid returned response JSON body",
     #     'description': "The endpoint did not return a response JSON body matching its specifications.",
-    #     'errors': [{'path': 'root', 'message': "was expecting a string"}],
+    #     'errors': [{'path': '', 'message': "was expecting a string"}],
     #     'warnings': []
     # }
 
@@ -313,15 +313,15 @@ def test_errors():
 
     from byteplug.endpoints.endpoint import response
 
-    @request(Enum(values=[
+    @request(Node('enum', values=[
         'foo', 'bar', 'quz', 'yolo',
         'specs-mismatch',
         'invalid-error',
         'unhandled-error'
-    ]).to_object())
-    @error("foo", Flag().to_object(),    "Foo", "Description of 'Foo' error.")
-    @error("bar", Integer().to_object(), name="Bar")
-    @error("quz", String().to_object(),  description="Description of 'Quz' error.")
+    ]))
+    @error("foo", Node('flag'),  "Foo", "Description of 'Foo' error.")
+    @error("bar", Node('number'), name="Bar")
+    @error("quz", Node('string'), description="Description of 'Quz' error.")
     @error("yolo") # This is an error with no specs
     @endpoint("foobar")
     def foobar(document):
@@ -392,7 +392,7 @@ def test_errors():
         'code': 'invalid-error-specs-mismatch',
         'name': "Invalid returned error JSON body",
         'description': "The endpoint did not return an error JSON body matching its specifications.",
-        'errors': [{'path': 'root', 'message': 'was expecting a string'}],
+        'errors': [{'path': '', 'message': 'was expecting a string'}],
         'warnings': []
     }
 
@@ -487,11 +487,11 @@ def test_adaptor_decorator():
 
         return args
 
-    request_specs = Map({
-        'foo': Flag(),
-        'bar': Integer(),
-        'quz': String()
-    }).to_object()
+    request_specs = Node('map', fields={
+        'foo': Node('flag'),
+        'bar': Node('number'),
+        'quz': Node('string')
+    })
 
     document = {
         "foo": False,
@@ -500,7 +500,7 @@ def test_adaptor_decorator():
     }
 
     @request(request_specs)
-    @response(String().to_object())
+    @response(Node('string'))
     @adaptor(my_adaptor)
     @endpoint("foo")
     def foo(foo, bar, quz):
@@ -511,7 +511,7 @@ def test_adaptor_decorator():
         return "foo"
 
     @request(request_specs)
-    @response(String().to_object())
+    @response(Node('string'))
     @adaptor(my_adaptor)
     @collection_endpoint("quz", "foo", operate_on_item=True)
     def quz_foo(item, foo, bar, quz):
@@ -523,7 +523,7 @@ def test_adaptor_decorator():
         return "quz/foo"
 
     @request(request_specs)
-    @response(String().to_object())
+    @response(Node('string'))
     @adaptor(my_adaptor)
     @collection_endpoint("quz", "bar", operate_on_item=True, authentication=True)
     def quz_bar(user_id, item, foo, bar, quz):

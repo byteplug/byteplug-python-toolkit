@@ -10,7 +10,7 @@ def errors_to_json(errors):
     json = []
     for error in errors:
         item = {
-            'path': error.path,
+            'path': '.'.join(error.path),
             'message': error.message
         }
         json.append(item)
