@@ -248,15 +248,12 @@ adjust_node_map = {
 }
 
 def adjust_node(path, node, specs, errors, warnings):
+    # We accept a None value if the type is marked as optional.
     optional = specs.get('option', False)
-    if not optional and node is None:
-        error = ValidationError(path, "value cant be null")
-        errors.append(error)
-        return
-    elif optional and node is None:
+    if optional and node is None:
         return None
-    else:
-        return adjust_node_map[specs['type']](path, node, specs, errors, warnings)
+
+    return adjust_node_map[specs['type']](path, node, specs, errors, warnings)
 
 def document_to_object(document, specs, errors=None, warnings=None):
     """ Convert a JSON document to its Python equivalent. """

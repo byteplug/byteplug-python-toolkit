@@ -284,18 +284,17 @@ def test_response():
         'warnings': []
     }
 
-    # TODO; FIX THIS
-    # url = build_url('/bar-with-no-response', 8094)
-    # response = requests.post(url)
-    # assert response.status_code == 500
-    # assert response.json() == {
-    #     'kind': 'server-side-error',
-    #     'code': 'invalid-response-specs-mismatch',
-    #     'name': "Invalid returned response JSON body",
-    #     'description': "The endpoint did not return a response JSON body matching its specifications.",
-    #     'errors': [{'path': '', 'message': "was expecting a string"}],
-    #     'warnings': []
-    # }
+    url = build_url('/bar-with-no-response', 8094)
+    response = requests.post(url)
+    assert response.status_code == 500
+    assert response.json() == {
+        'kind': 'server-side-error',
+        'code': 'invalid-response-specs-mismatch',
+        'name': "Invalid returned response JSON body",
+        'description': "The endpoint did not return a response JSON body matching its specifications.",
+        'errors': [{'path': '', 'message': "was expecting a string"}],
+        'warnings': []
+    }
 
     stop_server(server, 8094)
 
