@@ -17,9 +17,9 @@ from byteplug.document.exception import ValidationError, ValidationWarning
 from byteplug.endpoints.record import Record
 from byteplug.endpoints.endpoint import Operate
 from byteplug.endpoints.exception import EndpointError
-from byteplug.endpoints.utils import invalid_response_specs_mismatch, json_body_expected, body_not_json_format, json_body_specs_mismatch, no_json_body_expected
-from byteplug.endpoints.utils import invalid_error_specs_mismatch, invalid_error, invalid_error_specs_mismatch, unhandled_error
-from byteplug.endpoints.utils import valid_error
+from byteplug.endpoints.utility import invalid_response_specs_mismatch, json_body_expected, body_not_json_format, json_body_specs_mismatch, no_json_body_expected
+from byteplug.endpoints.utility import invalid_error_specs_mismatch, invalid_error, invalid_error_specs_mismatch, unhandled_error
+from byteplug.endpoints.utility import valid_error
 
 # TOOD; Move this to utils.py ?
 def authorization_denied():
