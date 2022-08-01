@@ -8,6 +8,7 @@
 
 import re
 import json
+from byteplug.document.node import Node
 from byteplug.document.utility import read_minimum_value, read_maximum_value
 from byteplug.document.utility import check_length
 from byteplug.document.exception import ValidationError
@@ -252,6 +253,9 @@ def adjust_node(path, node, specs, errors, warnings):
 
 def object_to_document(object, specs, errors=None, warnings=None, no_dump=False):
     """ Convert Python object to its JSON equivalent. """
+
+    if type(specs) is Node:
+        specs = specs.to_object()
 
     # Assume specs is valid (Python object form)
 
