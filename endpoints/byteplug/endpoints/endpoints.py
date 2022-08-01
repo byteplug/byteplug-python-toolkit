@@ -10,11 +10,11 @@ import re
 import yaml
 from flask import Flask, request
 from flask_cors import CORS
-from byteplug.document.object import object_to_document
 from byteplug.document.specs import validate_specs
+from byteplug.document.node import Node
+from byteplug.document.object import object_to_document
 from byteplug.document.document import document_to_object
 from byteplug.document.exception import ValidationError, ValidationWarning
-from byteplug.endpoints.record import Record
 from byteplug.endpoints.endpoint import Operate
 from byteplug.endpoints.exception import EndpointError
 from byteplug.endpoints.utility import invalid_response_specs_mismatch, json_body_expected, body_not_json_format, json_body_specs_mismatch, no_json_body_expected
@@ -81,15 +81,20 @@ class Endpoints:
 
         self.version = version
 
+        self.records = {}
+
         self.endpoints = []
         self.collections = {}
 
     def add_record(self, tag, specs):
         assert re.match(r"^[a-z]+(-[a-z]+)*$", tag), "invalid record name"
-        validate_specs(specs.to_object())
 
-        assert tag not in Record.records_map, "record with that name already exists"
-        Record.records_map[tag] = specs
+        if type(specs) is Node:
+            specs = specs.to_object()
+        validate_specs(specs)
+
+        assert tag not in self.records, "record with that name already exists"
+        self.records[tag] = specs
 
     def add_collection(self, tag, name=None, description=None):
         assert re.match(r"^[a-z]+(-[a-z]+)*$", tag), "invalid collection name"
@@ -329,8 +334,8 @@ class Endpoints:
 
         # Generate 'records' block.
         records_block = {}
-        for record, specs in Record.records_map.items():
-            records_block[record] = specs.to_object()
+        for record, specs in self.records.items():
+            records_block[record] = specs
         block['records'] = records_block
 
         # Generate 'endpoints' block.

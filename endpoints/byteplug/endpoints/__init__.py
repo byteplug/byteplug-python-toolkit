@@ -6,7 +6,6 @@
 #
 # Written by Jonathan De Wachter <jonathan.dewachter@byteplug.io>, June 2022
 
-from byteplug.endpoints.record import Record
 from byteplug.endpoints.endpoint import endpoint, collection_endpoint, Operate
 from byteplug.endpoints.endpoint import request, response, error
 from byteplug.endpoints.endpoint import adaptor
