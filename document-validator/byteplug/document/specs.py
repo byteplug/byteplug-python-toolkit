@@ -29,8 +29,10 @@ def validate_minimum_or_maximum_property(name, path, value, errors):
         # Only 'exclusive' and 'value' properties are accepted.
         extra_properties = set(value.keys()) - {'exclusive', 'value'}
         if extra_properties:
-            error = ValidationError(path + [name], f"'{extra_properties.pop()}' property is unexpected")
-            errors.append(error)
+            for property in extra_properties:
+                error = ValidationError(path + [name], f"'{property}' property is unexpected")
+                errors.append(error)
+
             return
 
         exclusive = value.get('exclusive')
@@ -58,20 +60,21 @@ def validate_length_property(path, value, errors, warnings):
     path = path + ['length']
 
     if type(value) in (int, float):
-        if value < 0:
-            error = ValidationError(path, "must be greater or equal to zero")
-            errors.append(error)
-
         if type(value) is float:
             warning = ValidationWarning(path, "should be an integer (got float)")
             warnings.append(warning)
+
+        if value < 0:
+            error = ValidationError(path, "must be greater or equal to zero")
+            errors.append(error)
 
     elif type(value) is dict:
         # Only 'minimum' and 'maximum' properties are accepted.
         extra_properties = set(value.keys()) - {'minimum', 'maximum'}
         if extra_properties:
-            error = ValidationError(path, f"'{extra_properties.pop()}' property is unexpected")
-            errors.append(error)
+            for property in extra_properties:
+                error = ValidationError(path, f"'{property}' property is unexpected")
+                errors.append(error)
             return
 
         minimum = value.get('minimum')
@@ -81,7 +84,7 @@ def validate_length_property(path, value, errors, warnings):
                 errors.append(error)
 
             if type(minimum) is float:
-                warning = ValidationWarning(path, "should be an integer (got float)")
+                warning = ValidationWarning(path + ['minimum'], "should be an integer (got float)")
                 warnings.append(warning)
 
             if minimum < 0:
@@ -95,7 +98,7 @@ def validate_length_property(path, value, errors, warnings):
                 errors.append(error)
 
             if type(maximum) is float:
-                warning = ValidationWarning(path, "should be an integer (got float)")
+                warning = ValidationWarning(path + ['maximum'], "should be an integer (got float)")
                 warnings.append(warning)
 
             if maximum < 0:
@@ -187,7 +190,6 @@ def validate_object_type(path, block, errors, warnings):
     else:
         error = ValidationError(path, "'key' property is missing")
         errors.append(error)
-        return
 
     if 'length' in block:
         validate_length_property(path, block['length'], errors, warnings)

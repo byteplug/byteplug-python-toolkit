@@ -278,8 +278,7 @@ def document_to_object(document, specs, errors=None, warnings=None):
     object = json.loads(document)
     adjusted_object = adjust_node([], object, specs, errors, warnings)
 
-    # If we're not lazy-validating the specs, we raise the first error that
-    # occurred.
+    # If we're not lazy-validating, we raise the first error that occurred.
     if not lazy_validation and len(errors) > 0:
         raise errors[0]
 

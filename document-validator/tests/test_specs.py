@@ -119,7 +119,7 @@ def length_property_test(specs):
     warnings = []
     validate_specs(specs | {'length': {'minimum': 42.5}}, warnings=warnings)
     assert len(warnings) == 1
-    assert warnings[0].path == ["length"]
+    assert warnings[0].path == ["length", "minimum"]
     assert warnings[0].message == "should be an integer (got float)"
 
     with pytest.raises(ValidationError) as e:
@@ -130,7 +130,7 @@ def length_property_test(specs):
     warnings = []
     validate_specs(specs | {'length': {'maximum': 42.5}}, warnings=warnings)
     assert len(warnings) == 1
-    assert warnings[0].path == ["length"]
+    assert warnings[0].path == ["length", "maximum"]
     assert warnings[0].message == "should be an integer (got float)"
 
     for minimum, maximum in ((42, 0), (1, 0)):
@@ -161,6 +161,7 @@ def test_type_block():
     for specs in [False, True, 42, "Hello world!"]:
         with pytest.raises(ValidationError) as e:
             validate_specs(specs)
+        assert e.value.path == []
         assert e.value.message == "value must be a dict"
 
     # 'type' property is missing
@@ -435,9 +436,8 @@ def test_array_type():
         'value': 42,
         'length': False,
         'option': 42,
-        'foo': 'br'
+        'foo': 'bar'
     }
-
 
     errors = []
     validate_specs(specs, errors=errors)
