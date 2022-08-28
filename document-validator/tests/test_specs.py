@@ -12,15 +12,17 @@ import pytest
 
 VALID_NAMES = [
     "foobar",
-    "foo-bar"
+    "FOOBAR",
+    "123456",
+    "foo-bar",
+    "foo_bar"
 ]
 
 INVALID_NAMES = [
-    "Foobar",
-    "foo_bar",
-    "-foobar",
-    "barfoo-",
-    "foo--bar"
+    "foo*bar",
+    "foo&bar",
+    "bar'foo",
+    "foo)bar"
 ]
 
 def dict_minus_item(a, key):
@@ -710,7 +712,7 @@ def test_map_type():
     specs = {
         'type': 'map',
         'fields': {
-            '-foo': {'type': 'flag'},
+            '@foo': {'type': 'flag'},
             'bar': {'type': 'foo'}
         },
         'option': 42,
@@ -723,7 +725,7 @@ def test_map_type():
     assert errors[0].path == []
     assert errors[0].message == "'foo' property is unexpected"
     assert errors[1].path == ["fields"]
-    assert errors[1].message == "'-foo' is an incorrect key name"
+    assert errors[1].message == "'@foo' is an incorrect key name"
     assert errors[2].path == ["$bar"]
     assert errors[2].message == "value of 'type' is incorrect"
     assert errors[3].path == ["option"]
@@ -755,9 +757,9 @@ def test_enum_type():
     assert e.value.message == "must contain at least one value"
 
     with pytest.raises(ValidationError) as e:
-        validate_specs({'type': 'enum', 'values': ['-foo', 'bar', 'quz']})
+        validate_specs({'type': 'enum', 'values': ['@foo', 'bar', 'quz']})
     assert e.value.path == ["values"]
-    assert e.value.message == "'-foo' is an incorrect value"
+    assert e.value.message == "'@foo' is an incorrect value"
 
     with pytest.raises(ValidationError) as e:
         validate_specs({'type': 'enum', 'values': ['foo', 'bar', 'quz', 'foo']})
@@ -773,7 +775,7 @@ def test_enum_type():
     # test lazy validation
     specs = {
         'type': 'enum',
-        'values': ['-foo', 'bar', 'quz', 'bar'],
+        'values': ['@foo', 'bar', 'quz', 'bar'],
         'option': 42,
         'foo': 'bar'
     }
@@ -784,7 +786,7 @@ def test_enum_type():
     assert errors[0].path == []
     assert errors[0].message == "'foo' property is unexpected"
     assert errors[1].path == ["values"]
-    assert errors[1].message == "'-foo' is an incorrect value"
+    assert errors[1].message == "'@foo' is an incorrect value"
     assert errors[2].path == ["values"]
     assert errors[2].message == "'bar' value is duplicated"
     assert errors[3].path == ["option"]

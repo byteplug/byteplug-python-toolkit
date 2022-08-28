@@ -230,7 +230,7 @@ def validate_map_type(path, block, errors, warnings):
         return
 
     for key, value in fields.items():
-        if not re.match(r"^[a-z]+(-[a-z]+)*$", key):
+        if not re.match(r"^[a-zA-Z0-9\-\_]+$", key):
             error = ValidationError(path + ['fields'], f"'{key}' is an incorrect key name")
             errors.append(error)
             continue
@@ -257,7 +257,7 @@ def validate_enum_type(path, block, errors, warnings):
     # Check for duplicates and check for validity of their value.
     processed_values = []
     for value in values:
-        if not re.match(r"^[a-z]+(-[a-z]+)*$", value):
+        if not re.match(r"^[a-zA-Z0-9\-\_]+$", value):
             error = ValidationError(path + ['values'], f"'{value}' is an incorrect value")
             errors.append(error)
             continue

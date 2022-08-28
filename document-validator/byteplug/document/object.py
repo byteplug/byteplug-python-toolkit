@@ -146,12 +146,12 @@ def process_object_node(path, node, specs, errors, warnings):
             node_key = str(item[0])
 
         elif key == 'string':
-            # # Keys are restricted by a given pattern; check value against it.
-            # # If it doesn't pass the test, the JSON document is invalid.
-            # if not re.match(r"^[a-z]+(-[a-z]+)*$", item[0]):
-            #     error = ValidationError(path, f"key at index {index} is invalid; expected to match the pattern")
-            #     errors.append(error)
-            #     continue
+            # Keys are restricted by a given pattern; check value against it.
+            # If it doesn't pass the test, the JSON document is invalid.
+            if not re.match(r"^[a-zA-Z0-9\-\_]+$", item[0]):
+                error = ValidationError(path, f"key at index {index} is invalid; expected to match the pattern")
+                errors.append(error)
+                continue
 
             node_key = item[0]
 

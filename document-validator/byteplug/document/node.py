@@ -136,7 +136,7 @@ class Node:
         assert type(fields) is dict, "fields must be a dict"
         for key, value in fields.items():
             assert type(key) is str, "keys must be string"
-            assert re.match(r"^[a-z]+(-[a-z]+)*$", key), "keys must match the regex"
+            assert re.match(r"^[a-zA-Z0-9\-\_]+$", key), "keys must match the regex"
             assert type(value) is Node, "value must be another node"
 
         self.properties['fields'] = {key: value.to_object() for key, value in fields.items()}
@@ -144,6 +144,6 @@ class Node:
     def update_enum_values(self, values):
         for value in values:
             assert type(value) is str, "values must be string"
-            assert re.match(r"^[a-z]+(-[a-z]+)*$", value), "values must match the regex"
+            assert re.match(r"^[a-zA-Z0-9\-\_]+$", value), "values must match the regex"
 
         self.properties['values'] = list(values)
