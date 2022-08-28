@@ -208,6 +208,16 @@ def test_number_type():
     name_property_test(specs)
     description_property_test(specs)
 
+    # test 'decimal' property
+    validate_specs(specs | {'decimal': True})
+    validate_specs(specs | {'decimal': False})
+
+    for invalid_value in [42, "Hello world!"]:
+        with pytest.raises(ValidationError) as e:
+            validate_specs(specs | {'decimal': invalid_value})
+        assert e.value.path == ["decimal"]
+        assert e.value.message == "value must be a bool"
+
     # test 'minimum' property
     validate_specs(specs | {'minimum': 42})
     validate_specs(specs | {'minimum': {'value': 42}})
@@ -304,6 +314,7 @@ def test_number_type():
     # test lazy validation
     specs = {
         'type': 'number',
+        'decimal': 'foo',
         'minimum': False,
         'maximum': "Hello world!",
         'option': 42,
@@ -315,12 +326,14 @@ def test_number_type():
 
     assert errors[0].path == []
     assert errors[0].message == "'foo' property is unexpected"
-    assert errors[1].path == ["minimum"]
-    assert errors[1].message == "value must be either a number or a dict"
-    assert errors[2].path == ["maximum"]
+    assert errors[1].path == ["decimal"]
+    assert errors[1].message == "value must be a bool"
+    assert errors[2].path == ["minimum"]
     assert errors[2].message == "value must be either a number or a dict"
-    assert errors[3].path == ["option"]
-    assert errors[3].message == "value must be a bool"
+    assert errors[3].path == ["maximum"]
+    assert errors[3].message == "value must be either a number or a dict"
+    assert errors[4].path == ["option"]
+    assert errors[4].message == "value must be a bool"
 
 def test_string_type():
     # test minimal specs

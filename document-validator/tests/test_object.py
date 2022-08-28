@@ -45,14 +45,23 @@ def test_flag_type():
 def test_number_type():
     specs = {'type': 'number'}
 
-    for value in [False, True, 42.0, "Hello world!", [], (), {}]:
+    for value in [False, True, "Hello world!", [], (), {}]:
         with pytest.raises(ValidationError) as e:
             object_to_document(value, specs)
         assert e.value.path == []
-        assert e.value.message == "was expecting an integer"
+        assert e.value.message == "was expecting an integer or float"
 
     document = object_to_document(42, specs)
     assert document == "42"
+
+    document = object_to_document(42.5, specs)
+    assert document == "42.5"
+
+    # test if value is being checked against decimal restriction
+    with pytest.raises(ValidationError) as e:
+        object_to_document(42.5, specs | {'decimal': False})
+    assert e.value.path == []
+    assert e.value.message == "was expecting non-decimal number"
 
     # test if value is being checked against minimum value
     specs = {
@@ -316,9 +325,9 @@ def test_array_type():
     object_to_document([True, 42, "Hello world!"], specs, errors=errors)
 
     assert errors[0].path == ["[0]"]
-    assert errors[0].message == "was expecting an integer"
+    assert errors[0].message == "was expecting an integer or float"
     assert errors[1].path == ["[2]"]
-    assert errors[1].message == "was expecting an integer"
+    assert errors[1].message == "was expecting an integer or float"
 
 def test_object_type():
     specs = {
@@ -425,9 +434,9 @@ def test_object_type():
     object_to_document({'foo': True, 'bar': 42, 'quz': "Hello world!"}, specs, errors=errors)
 
     assert errors[0].path == ["{foo}"]
-    assert errors[0].message == "was expecting an integer"
+    assert errors[0].message == "was expecting an integer or float"
     assert errors[1].path == ["{quz}"]
-    assert errors[1].message == "was expecting an integer"
+    assert errors[1].message == "was expecting an integer or float"
 
 def test_tuple_type():
     specs = {
@@ -458,7 +467,7 @@ def test_tuple_type():
     assert errors[0].path == ["<0>"]
     assert errors[0].message == "was expecting a boolean"
     assert errors[1].path == ["<1>"]
-    assert errors[1].message == "was expecting an integer"
+    assert errors[1].message == "was expecting an integer or float"
     assert errors[2].path == ["<2>"]
     assert errors[2].message == "was expecting a string"
 
@@ -545,7 +554,7 @@ def test_map_type():
     assert errors[0].path == ["$foo"]
     assert errors[0].message == "was expecting a boolean"
     assert errors[1].path == ["$bar"]
-    assert errors[1].message == "was expecting an integer"
+    assert errors[1].message == "was expecting an integer or float"
     assert errors[2].path == ["$quz"]
     assert errors[2].message == "was expecting a string"
 

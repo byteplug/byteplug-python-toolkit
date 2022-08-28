@@ -34,15 +34,21 @@ def process_flag_node(path, node, specs, errors, warnings):
     return node
 
 def process_number_node(path, node, specs, errors, warnings):
-    if type(node) is not int:
-        error = ValidationError(path, "was expecting an integer")
+    decimal = specs.get('decimal', True)
+    minimum = read_minimum_value(specs)
+    maximum = read_maximum_value(specs)
+
+    if type(node) not in (int, float):
+        error = ValidationError(path, "was expecting an integer or float")
+        errors.append(error)
+        return
+
+    if decimal == False and type(node) is float:
+        error = ValidationError(path, "was expecting non-decimal number")
         errors.append(error)
         return
 
     node_errors = []
-
-    minimum = read_minimum_value(specs)
-    maximum = read_maximum_value(specs)
 
     if minimum:
         is_exclusive, value = minimum

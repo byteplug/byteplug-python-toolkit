@@ -10,7 +10,7 @@ import re
 
 PROPERTIES = {
     'flag'   : [],
-    'number' : ['min', 'max'],
+    'number' : ['decimal', 'min', 'max'],
     'string' : ['length', 'pattern'],
     'array'  : ['value', 'length'],
     'object' : ['key', 'value', 'length'],
@@ -46,7 +46,9 @@ class Node:
                 assert type(value) is str, "value of 'description' property must be a string"
                 self.properties[key] = value
             elif key in PROPERTIES[self.type_]:
-                if key in ['min', 'max']:
+                if key == 'decimal':
+                    self.update_decimal_property(value)
+                elif key in ['min', 'max']:
                     self.update_min_max_property(key, value)
                 elif key == 'length':
                     self.update_length_property(value)
@@ -67,6 +69,10 @@ class Node:
                 self.properties[key] = value
             else:
                 raise AssertionError(f"property '{key}' is invalid")
+
+    def update_decimal_property(self, value):
+        assert type(value) is bool, "'decimal' value must be a bool"
+        self.properties['decimal'] = value
 
     def update_min_max_property(self, key, value):
         assert key in ['min', 'max']

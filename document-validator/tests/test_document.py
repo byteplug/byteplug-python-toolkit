@@ -53,10 +53,19 @@ def test_number_type():
         assert e.value.path == []
         assert e.value.message == "was expecting a JSON number"
 
-    for value in ['42', '42.0']:
-        object = document_to_object(value, specs)
-        assert type(object) is int
-        assert object == 42
+    object = document_to_object('42', specs)
+    assert type(object) is int
+    assert object == 42
+
+    object = document_to_object('42.0', specs)
+    assert type(object) is float
+    assert object == 42
+
+    # test if value is being checked against decimal restriction
+    with pytest.raises(ValidationError) as e:
+        document_to_object('42.5', specs | {'decimal': False})
+    assert e.value.path == []
+    assert e.value.message == "was expecting non-decimal number"
 
     # test if value is being checked against minimum value
     specs = {
@@ -133,16 +142,6 @@ def test_number_type():
         document_to_object("42", specs)
     assert e.value.path == []
     assert e.value.message == "value must be strictly lower than 42"
-
-    # check if warning is raised when it's a decimal value
-    warnings = []
-    object = document_to_object("42.5", {'type': 'number'}, warnings=warnings)
-    assert type(object) is int
-    assert object == 42
-
-    assert len(warnings) == 1
-    assert warnings[0].path == []
-    assert warnings[0].message == "may lose precision"
 
     # test lazy validation
     specs = {

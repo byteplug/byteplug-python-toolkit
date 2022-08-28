@@ -115,6 +115,15 @@ def validate_flag_type(path, block, errors, warnings):
     pass
 
 def validate_number_type(path, block, errors, warnings):
+    decimal = block.get('decimal')
+    if decimal is not None:
+        if type(decimal) is not bool:
+            error = ValidationError(path + ['decimal'], "value must be a bool")
+            errors.append(error)
+
+    else:
+        decimal = True
+
     minimum = None
     if 'minimum' in block:
         minimum = validate_minimum_or_maximum_property('minimum', path, block['minimum'], errors)
@@ -262,7 +271,7 @@ def validate_enum_type(path, block, errors, warnings):
 
 validators = {
     "flag"     : (validate_flag_type,     []),
-    "number"   : (validate_number_type,   ['minimum', 'maximum']),
+    "number"   : (validate_number_type,   ['decimal', 'minimum', 'maximum']),
     "string"   : (validate_string_type,   ['length', 'pattern']),
     "array"    : (validate_array_type,    ['value', 'length']),
     "object"   : (validate_object_type,   ['key', 'value', 'length']),
