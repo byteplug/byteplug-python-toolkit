@@ -276,9 +276,9 @@ def test_array_type():
     assert object == [True, False, True]
 
     specs = {'type': 'array', 'value': {'type': 'number'}}
-    object = document_to_object('[10, 42, 100]', specs)
+    object = document_to_object('[10, 42, 99.5]', specs)
     assert type(object) is list
-    assert object == [10, 42, 100]
+    assert object == [10, 42, 99.5]
 
     specs = {'type': 'array', 'value': {'type': 'string'}}
     object = document_to_object('["foo", "bar", "quz"]', specs)
@@ -382,13 +382,13 @@ def test_object_type():
     specs = {'type': 'object', 'key': 'string', 'value': {'type': 'number'}}
 
     for name in VALID_NAMES:
-        object = document_to_object('{"foo": 10, "name": 42, "quz": 100}'.replace('name', name), specs)
+        object = document_to_object('{"foo": 10, "name": 42, "quz": 99.5}'.replace('name', name), specs)
         assert type(object) is dict
-        assert object == {'foo': 10, name: 42, 'quz': 100}
+        assert object == {'foo': 10, name: 42, 'quz': 99.5}
 
     for name in INVALID_NAMES:
         with pytest.raises(ValidationError) as e:
-            document_to_object('{"foo": 10, "name": 42, "quz": 100}'.replace('name', name), specs)
+            document_to_object('{"foo": 10, "name": 42, "quz": 99.5}'.replace('name', name), specs)
         assert e.value.path == []
         assert e.value.message == "key at index 1 is invalid; expected to match the pattern"
 

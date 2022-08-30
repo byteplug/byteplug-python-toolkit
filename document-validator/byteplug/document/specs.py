@@ -124,26 +124,13 @@ def validate_number_type(path, block, errors, warnings):
             error = ValidationError(path + ['decimal'], "value must be a bool")
             errors.append(error)
 
-    else:
-        decimal = True
+    minimum = block.get('minimum')
+    if minimum is not None:
+        minimum = validate_minimum_or_maximum_property('minimum', path, minimum, errors)
 
-    minimum = None
-    if 'minimum' in block:
-        minimum = validate_minimum_or_maximum_property('minimum', path, block['minimum'], errors)
-
-        # TODO; The path is not accurate, it should either be .minimum.value or .minimum
-        if minimum is not None and type(minimum[1]) is float:
-            warning = ValidationWarning(path + ['minimum'], "should be an integer (got float)")
-            warnings.append(warning)
-
-    maximum = None
-    if 'maximum' in block:
-        maximum = validate_minimum_or_maximum_property('maximum', path, block['maximum'], errors)
-
-        # TODO; The path is not accurate, it should either be .maximum.value or .maximum
-        if maximum is not None and type(maximum[1]) is float:
-            warning = ValidationWarning(path + ['maximum'], "should be an integer (got float)")
-            warnings.append(warning)
+    maximum = block.get('maximum')
+    if maximum is not None:
+        maximum = validate_minimum_or_maximum_property('maximum', path, maximum, errors)
 
     if minimum and maximum:
         if maximum[1] < minimum[1]:

@@ -255,12 +255,6 @@ def test_number_type():
     assert e.value.path == ["minimum"]
     assert e.value.message == "'foo' property is unexpected"
 
-    warnings = []
-    validate_specs(specs | {'minimum': {'value': 42.5}}, warnings=warnings)
-    assert len(warnings) == 1
-    assert warnings[0].path == ["minimum"]
-    assert warnings[0].message == "should be an integer (got float)"
-
     # test 'maximum' property
     validate_specs(specs | {'maximum': 42})
     validate_specs(specs | {'maximum': {'value': 42}})
@@ -294,12 +288,6 @@ def test_number_type():
         validate_specs(specs | {'maximum': {'value': 42, 'foo': 'bar'}})
     assert e.value.path == ["maximum"]
     assert e.value.message == "'foo' property is unexpected"
-
-    warnings = []
-    validate_specs(specs | {'maximum': {'value': 42.5}}, warnings=warnings)
-    assert len(warnings) == 1
-    assert warnings[0].path == ["maximum"]
-    assert warnings[0].message == "should be an integer (got float)"
 
     # test minimum must be lower than maximum
     for minimum, maximum in ((42, 0), (-9, -10), (1, -1)):

@@ -52,7 +52,6 @@ def process_number_node(path, node, specs, errors, warnings):
 
     if minimum:
         is_exclusive, value = minimum
-        value = int(value)
 
         if is_exclusive:
             if not (node > value):
@@ -65,7 +64,6 @@ def process_number_node(path, node, specs, errors, warnings):
 
     if maximum:
         is_exclusive, value = maximum
-        value = int(value)
 
         if is_exclusive:
             if not (node < value):
