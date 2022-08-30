@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Byteplug Toolkit'
+project = 'Byteplug Toolkit for Python'
 copyright = '2022, Jonathan De Wachter'
 author = 'Jonathan De Wachter'
 
